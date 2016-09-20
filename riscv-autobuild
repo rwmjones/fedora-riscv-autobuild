@@ -318,14 +318,14 @@ sub get_latest_builds
         while (<F>) {
             chomp;
             my $r = nvr_to_package ($_);
-            $old{$1} = $r if $r;
+            $old{$r->{name}} = $r if $r;
         }
         close F;
         open F, "koji-builds.new" or die "koji-builds.new: $!";
         while (<F>) {
             chomp;
             my $r = nvr_to_package ($_);
-            $new{$1} = $r if $r;
+            $new{$r->{name}} = $r if $r;
         }
         close F;
 
