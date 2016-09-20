@@ -1,0 +1,428 @@
+#!/usr/bin/perl -w
+# -*- perl -*-
+#
+# Fedora/RISC-V autobuilder.
+# Copyright (C) 2016 Red Hat Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Read the README file first!
+
+use strict;
+use warnings;
+
+use Sys::Guestfs;
+use POSIX qw(WNOHANG);
+
+# Check we are being run from the correct directory.
+
+die "run this program from the top level source directory, please read the README\n"
+    unless -f "README" && -d "tmp" && -d "logs";
+die "need vmlinux in top level source directory, please read the README\n"
+    unless -f "vmlinux";
+die "need stage4-disk.img in top level source directory, please read the README\n"
+    unless -f "stage4-disk.img";
+
+#======================================================================
+# Configuration
+
+
+# Maximum number of parallel builds to run.
+my $max_builds = int `nproc`;
+
+# Fedora version we are building for.
+my $releasever = 25;
+my $new_builds_tag = "f$releasever-updates-candidate";
+
+# Poll interval (in seconds, best to leave this unchanged).
+my $poll_interval = 5 * 60;
+
+
+# End of configuration
+#======================================================================
+
+# Boot a disk image in qemu, running it as a background process.
+# Returns the process ID.
+
+sub boot_vm
+{
+    my $disk = shift;           # path to <name>-disk.img
+    my $bootlog = shift;        # path to boot.log
+
+    my @cmd = ( "qemu-system-riscv", "-m", "4G",
+                "-kernel", "/usr/bin/bbl",
+                "-append", "vmlinux",
+                "-drive", "file=$disk,format=raw",
+                "-nographic" );
+
+    my $pid = fork ();
+    die "fork: $!" unless defined $pid;
+    if ($pid == 0) {
+        # Redirect stdin from /dev/null.
+        open (STDIN, "/dev/null");
+        # Redirect stdout & stderr to the log file.
+        open (STDOUT, ">", "$bootlog");
+        open (STDERR, ">&", STDOUT);
+        # Run qemu.
+        exec @cmd;
+        die "exec: ", $cmd[0], ": $!";
+    }
+
+    $pid
+}
+
+# Write the /init script that controls the build inside the VM.
+
+sub init_script
+{
+    my $name = shift;
+    my $nvr = shift;
+    my $srpm = shift;
+
+    my $init = <<__EOF__;
+#!/bin/bash -
+
+# Set up the PATH.
+PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin
+export PATH
+
+# Root filesystem is mounted as ro, remount it as rw.
+mount -o remount,rw /
+
+# Mount standard filesystems.
+mount -t proc /proc /proc
+mount -t sysfs /sys /sys
+mount -t tmpfs -o "nosuid,size=20%,mode=0755" tmpfs /run
+mkdir -p /run/lock
+
+# XXX devtmpfs
+
+# Initialize dynamic linker cache.
+ldconfig /usr/lib64 /usr/lib /lib64 /lib
+
+# There is no hardware clock, just ensure the date is not miles out.
+date `date -r /usr/bin +%m%d%H%M%Y`
+
+hostname riscv-autobuild
+echo riscv-autobuild.fedoraproject.org > /etc/hostname
+
+echo
+echo "This is the Fedora RISC-V autobuilder"
+echo "Current package: $nvr"
+echo
+
+# Cleanup function called on failure or exit.
+cleanup ()
+{
+    set +e
+    # Sync disks and shut down.
+    sync
+    sleep 5
+    sync
+    mount.static -o remount,ro / >&/dev/null
+    poweroff
+}
+trap cleanup INT QUIT TERM EXIT ERR
+
+set -e
+
+# Install the build requirements.
+# tdnf cannot handle versioned requirements, so just try to
+# install any package with the same name here.
+tdnf --releasever $releasever install `rpm -qRp $srpm | awk '{print \$1}'` |& tee /root.log
+
+# Build the package.
+rpmbuild --rebuild $srpm |& tee /build.log
+
+# If we got here, the build was successful.  Drop a file into
+# the root directory so we know.
+touch /buildok
+
+# cleanup() is called automatically here.
+__EOF__
+
+    return $init;
+}
+
+# Start a new build.  Returns the build object.
+
+sub start_build
+{
+    my $pkg = shift;
+
+    # NVR as a single string:
+    my $nvr = $pkg->{nvr};
+
+    # Split NVR of the RPM:
+    my $name = $pkg->{name};
+    my $version = $pkg->{version};
+    my $release = $pkg->{release};
+
+    my $srpm = download_srpm ($nvr);
+    return undef unless $srpm;
+
+    # Create the build directory.
+    my $logdir = "logs/$name/$version-$release";
+    my $cmd = "mkdir -p $logdir";
+    system ($cmd) == 0 or die "$cmd: $!";
+
+    # If we already built this package successfully, don't
+    # try it again.
+    if (-f "$logdir/buildok") {
+        printf "$nvr already built\n";
+        return undef;
+    }
+
+    # Take an atomic full copy of the stage4 disk image.
+    my $disk = "tmp/$name-disk.img";
+    $cmd = "cp stage4-disk.img $disk";
+    system ($cmd) == 0 or die "$cmd: $!";
+
+    my $g = open_disk ($disk);
+
+    # Copy the source RPM into the disk.
+    my $srpm_in_disk = "/var/tmp/$nvr.src.rpm";
+    $g->upload ($srpm, $srpm_in_disk);
+
+    # Create an init script and insert it into the disk image.
+    my $init = init_script ($name, $nvr, $srpm_in_disk);
+    $g->write ("/init", $init);
+    $g->chmod (0755, "/init");
+
+    # Close the disk image.
+    $g->shutdown ();
+    $g->close ();
+
+    print $nvr, " build starting\n";
+
+    # Boot the VM.
+    my $bootlog = "$logdir/boot.log";
+    my $pid = boot_vm ($disk, $bootlog);
+
+    return { pid => $pid, pkg => $pkg, srpm => $srpm,
+             logdir => $logdir, bootlog => $bootlog,
+             disk => $disk };
+}
+
+# Finish off a build (it has already been reaped by waitpid).
+
+sub finish_build
+{
+    my $build = shift;
+
+    my $g = open_disk ($build->{disk});
+
+    # Save root.log if it was created.
+    eval {
+        $g->download ("/root.log",
+                      $build->{logdir} . "/root.log");
+    };
+
+    # Save build.log if it was created.
+    eval {
+        $g->download ("/build.log",
+                      $build->{logdir} . "/build.log");
+    };
+
+    # Did the build finish successfully?
+    if ($g->exists ("/buildok")) {
+        print $build->{nvr}, " built successfully!\n";
+
+        # We save a flag in the directory so we don't try to
+        # build the package again.
+        open F, ">", $build->{logdir} . "/buildok" or die;
+        close F;
+
+        # Save the RPMs and SRPM.
+        $g->copy_out ("/rpmbuild/RPMS", "RPMS");
+        $g->copy_out ("/rpmbuild/SRPMS", "SRPMS");
+
+        # We have a new RPM, so recreate the repository and add it to
+        # the stage4 master disk image.
+        createrepo ();
+        add_rpms_to_stage4 ();
+    } else {
+        print $build->{nvr}, " failed to build, see ",
+            $build->{logdir}, ".\n";
+    }
+
+    # Delete the disk image.
+    unlink ($build->{disk});
+
+    # We should have at least a boot.log, and maybe much more, so rsync.
+    rsync ();
+}
+
+# This code is basically copied from
+# /usr/share/doc/perl-Sys-Guestfs/inspect_vm.pl
+
+sub open_disk
+{
+    my $disk = shift;
+
+    my $g = Sys::Guestfs->new ();
+    $g->add_drive_opts ($disk, format => "raw");
+    $g->launch ();
+
+    my @roots = $g->inspect_os ();
+    die if @roots == 0 || @roots > 1;
+    my $root = $roots[0];
+    my %mps = $g->inspect_get_mountpoints ($root);
+    my @mps = sort { length $a <=> length $b } (keys %mps);
+    for my $mp (@mps) {
+        eval { $g->mount ($mps{$mp}, $mp) };
+    }
+
+    $g;
+}
+
+sub nvr_to_package
+{
+    local $_ = shift;
+    return undef unless /^(.*?)-(\d.*)-([^-]+)$/;
+    return { nvr => $_, name => $1, version => $2, release => $3 };
+}
+
+# Return the latest builds from Koji.
+# There's not actually a way to do this, so this saves the
+# list of current builds to a local file, and returns the
+# differences.
+
+sub get_latest_builds
+{
+    my @r = ();
+
+    my $cmd = "koji latest-pkg --quiet --all $new_builds_tag | awk '{print \$1}' > koji-builds.new";
+    if (system ($cmd) != 0) {
+        warn "koji command failed: $?";
+        return @r;
+    }
+
+    if (-f "koji-builds") {
+        # Read the old file and the new file and return any
+        # new packages.
+        my %old;
+        my %new;
+        open F, "koji-builds" or die "koji-builds: $!";
+        while (<F>) {
+            chomp;
+            my $r = nvr_to_package ($_);
+            $old{$1} = $r if $r;
+        }
+        close F;
+        open F, "koji-builds.new" or die "koji-builds.new: $!";
+        while (<F>) {
+            chomp;
+            my $r = nvr_to_package ($_);
+            $new{$1} = $r if $r;
+        }
+        close F;
+
+        foreach (keys %new) {
+            if (! exists $old{$_}) {
+                # Completely new package, didn't exist in old set.
+                my %n = %{$new{$_}};
+                push @r, \%n;
+            }
+            else {
+                if ($old{$_}{nvr} ne $new{$_}{nvr}) {
+                    # Package version changed.
+                    my %n = %{$new{$_}};
+                    push @r, \%n;
+                }
+            }
+        }
+    }
+    rename "koji-builds.new", "koji-builds" or die "rename: $!";
+    @r;
+}
+
+# Download a source RPM from Koji.
+
+sub download_srpm
+{
+    my $nvr = shift;
+    my $cmd = "cd tmp && koji download-build -a src $nvr";
+    if (system ($cmd) == 0) {
+        return "tmp/$nvr.src.rpm";  # Local filename.
+    } else {
+        return undef;           # Download failed.
+    }
+}
+
+#----------------------------------------------------------------------
+# The main loop.  See README for how this works.
+
+# List of running builds.
+my %running = ();
+my $nr_running = 0;
+
+# List of packages that are candidates for rebuilding on RISC-V.
+my @packages = ();
+
+my $packages_from_command_line = @ARGV > 0;
+
+for (;;) {
+    # Fetch more packages from Koji.
+    if (@packages == 0) {
+        if (!$packages_from_command_line) {
+            @packages = get_latest_builds ();
+        } else {
+            # Otherwise user specified an exact list on the command
+            # line so use that.
+            my $nvr = shift @ARGV;
+            if ($nvr) {
+                my $pkg = nvr_to_package ($nvr);
+                push @packages, $pkg if $pkg;
+            }
+        }
+    }
+
+    # If any builds have finished, reap them.
+    my $name;
+    LOOP: foreach $name (sort keys %running) {
+        if (waitpid ($running{$name}{pid}, WNOHANG) > 0) {
+            finish_build ($running{$name});
+            delete $running{$name};
+            $nr_running--;
+            redo LOOP;
+        }
+    }
+
+    print "Num builds running: ", $nr_running, " (max: $max_builds)\n";
+    print "Num packages waiting to start: ", 0+@packages, "\n";
+
+    # If we've maxed out the number of builds, or there are no
+    # packages to build, sleep for a bit.
+    if ($nr_running >= $max_builds || @packages == 0) {
+        printf "Sleeping for %d seconds ...\n", $poll_interval;
+        sleep $poll_interval;
+        next;
+    }
+
+    # Start more builds.
+    while (@packages > 0 && $nr_running < $max_builds) {
+        my $pkg = $packages[0];
+        delete $packages[0];
+
+        my $name = $pkg->{name};
+        unless ($running{$name}) {
+            my $build = start_build ($pkg);
+            if ($build) {
+                $running{$name} = $build;
+                $nr_running++;
+            }
+        }
+    }
+}

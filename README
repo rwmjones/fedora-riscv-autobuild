@@ -1,0 +1,74 @@
+Part of the Fedora/RISC-V project:
+https://fedoraproject.org/wiki/Architectures/RISC-V
+
+This is a program which automatically builds packages that have been
+successfully built in the Fedora Koji build system.  It builds them
+in a clean "stage4" virtual machine.
+
+The process is roughly as follows:
+
+(1) Koji is queried for the latest builds.  If a new build is found,
+the source RPM is downloaded from Koji.
+
+(2) The source RPM is added to a clean copy of the stage4 disk image.
+This stage4 is booted up in a QEMU virtual machine and the source RPM
+is installed along with its BuildRequires.  If this step fails (which
+it usually does) then the root.log is saved so you can later check
+what BRs were missing.
+
+(3) We then try to build the package (again, inside the VM).  If this
+step fails then the build.log is saved so you can check it later.
+
+(4) If the build is successful, the result is copied out of the VM.
+
+(5) If the build is successful, then a new stage4 disk image is built
+which feeds back into step (2) above.  In other words, future builds
+will be able to use the new package almost immediately.
+
+(6) The root.log, build.log, any RPMs and SRPMs, and any new disk
+image is rsynced to the public webserver at
+https://fedorapeople.org/groups/risc-v/
+
+How to run it:
+
+(1) Install and/or download any requirements (see below).
+
+(2) Edit the riscv-autobuild script and adjust the configuration
+section at the top to suit.
+
+(3) Run this command as a non-root user:
+
+  ./riscv-autobuild
+
+or if you just want to build a particular set of packages (which is
+useful for testing), provide the exact NVRs of each, eg:
+
+  ./riscv-autobuild emacs-25.1-1.fc25 which-2.21-1.fc25
+
+Requirements:
+
+ - A fast server with plenty of RAM
+
+ - Recent Fedora.  It probably works with RHEL or CentOS 7 too.
+
+ - Perl
+
+ - koji command
+
+ - riscv-qemu from https://copr.fedorainfracloud.org/coprs/rjones/riscv/
+
+ - perl-Sys-Guestfs
+
+ - createrepo
+
+ - rsync
+
+ - The Fedora/RISC-V kernel, either built from
+   https://github.com/rwmjones/fedora-riscv , or downloaded to the
+   current directory from http://oirase.annexia.org/riscv/vmlinux
+
+ - Download http://oirase.annexia.org/stage4-disk.img to the current
+   directory.
+
+To upload built packages you will need rsync access to
+https://fedorapeople.org/groups/risc-v/

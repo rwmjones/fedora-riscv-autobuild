@@ -1,0 +1,7 @@
+*~
+
+/stage4-disk.img
+/vmlinux
+
+/tmp/*-disk.img
+/tmp/*.rpm
