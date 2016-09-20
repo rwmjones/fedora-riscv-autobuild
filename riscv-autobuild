@@ -140,10 +140,10 @@ set -e
 # Install the build requirements.
 # tdnf cannot handle versioned requirements, so just try to
 # install any package with the same name here.
-tdnf --releasever $releasever install `rpm -qRp $srpm | awk '{print \$1}'` |& tee /root.log
+tdnf --releasever $releasever install `rpm -qRp $srpm | awk '{print \$1}'` >& /root.log
 
 # Build the package.
-rpmbuild --rebuild $srpm |& tee /build.log
+rpmbuild --rebuild $srpm >& /build.log
 
 # If we got here, the build was successful.  Drop a file into
 # the root directory so we know.
@@ -237,7 +237,7 @@ sub finish_build
 
     # Did the build finish successfully?
     if ($g->exists ("/buildok")) {
-        print $build->{nvr}, " built successfully!\n";
+        print $build->{pkg}->{nvr}, " built successfully!\n";
 
         # We save a flag in the directory so we don't try to
         # build the package again.
@@ -253,7 +253,7 @@ sub finish_build
         createrepo ();
         add_rpms_to_stage4 ();
     } else {
-        print $build->{nvr}, " failed to build, see ",
+        print $build->{pkg}->{nvr}, " failed to build, see ",
             $build->{logdir}, ".\n";
     }
 
@@ -359,6 +359,21 @@ sub download_srpm
     } else {
         return undef;           # Download failed.
     }
+}
+
+sub rsync
+{
+    # XXX
+}
+
+sub createrepo
+{
+    # XXX
+}
+
+sub add_rpms_to_stage4
+{
+    # XXX
 }
 
 #----------------------------------------------------------------------
