@@ -3,5 +3,7 @@
 /stage4-disk.img
 /vmlinux
 
+/logs/*
+
 /tmp/*-disk.img
 /tmp/*.rpm
