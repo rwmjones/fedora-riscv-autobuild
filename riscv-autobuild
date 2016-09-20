@@ -254,7 +254,7 @@ sub finish_build
         add_rpms_to_stage4 ();
     } else {
         print $build->{pkg}->{nvr}, " failed to build, see ",
-            $build->{logdir}, ".\n";
+            $build->{logdir}, "/boot.log\n";
     }
 
     # Delete the disk image.
@@ -329,14 +329,14 @@ sub get_latest_builds
         }
         close F;
 
-        foreach (keys %new) {
+        foreach (sort keys %new) {
             if (! exists $old{$_}) {
                 # Completely new package, didn't exist in old set.
                 my %n = %{$new{$_}};
                 push @r, \%n;
             }
             else {
-                if ($old{$_}{nvr} ne $new{$_}{nvr}) {
+                if ($old{$_}->{nvr} ne $new{$_}->{nvr}) {
                     # Package version changed.
                     my %n = %{$new{$_}};
                     push @r, \%n;
@@ -407,7 +407,7 @@ for (;;) {
     # If any builds have finished, reap them.
     my $name;
     LOOP: foreach $name (sort keys %running) {
-        if (waitpid ($running{$name}{pid}, WNOHANG) > 0) {
+        if (waitpid ($running{$name}->{pid}, WNOHANG) > 0) {
             finish_build ($running{$name});
             delete $running{$name};
             $nr_running--;
@@ -432,6 +432,7 @@ for (;;) {
         delete $packages[0];
 
         my $name = $pkg->{name};
+        die "invalid pkg" unless defined $name; # should never happen
         unless ($running{$name}) {
             my $build = start_build ($pkg);
             if ($build) {
