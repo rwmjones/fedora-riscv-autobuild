@@ -175,7 +175,7 @@ NetworkManager-openvpn-1.2.4-2.fc25
 NetworkManager-pptp-1.2.2-1.fc25
 NetworkManager-ssh-1.2.1-0.fc25
 NetworkManager-sstp-1.2.0-1.fc25
-NetworkManager-strongswan-1.3.1-3.20160330libnm.fc25
+NetworkManager-strongswan-1.4.0-1.fc25
 NetworkManager-vpnc-1.2.2-1.fc25
 OCE-0.17.1-1.fc25
 ORBit-0.5.17-44.fc24
@@ -5051,7 +5051,7 @@ jastow-2.0.1-1.fc25
 jasypt-1.9.2-4.fc25
 jatl-0.2.2-10.fc25
 java-1.8.0-openjdk-1.8.0.102-2.b14.fc25
-java-1.8.0-openjdk-aarch32-1.8.0.102-2.160812.fc25
+java-1.8.0-openjdk-aarch32-1.8.0.102-4.160812.fc25
 java-atk-wrapper-0.33.2-2.fc24
 java-augeas-0.0.2-10.fc24
 java-base64-2.3.8-10.fc25
@@ -14603,7 +14603,7 @@ python-pyzabbix-0.7.3-6.fc25
 python-pyzolib-0.3.3-5.fc25
 python-q-2.5-6.fc25
 python-qalsadi-0.1-5.fc25
-python-qpid-0.32-15.fc25
+python-qpid-1.35.0-1.fc25
 python-qrcode-5.1-4.fc25
 python-qrencode-0-2.git.a58d28a.fc25
 python-qserve-0.2.8-7.fc25
@@ -15165,12 +15165,12 @@ qpdf-6.0.0-3.fc25
 qpdfview-0.4.16-3.fc24
 qperf-0.4.9-7.fc25
 qpid-cpp-1.35.0-1.fc25
-qpid-dispatch-0.6.1-2.fc25
+qpid-dispatch-0.6.1-3.fc25
 qpid-java-6.0.4-1.fc25
 qpid-jms-0.9.0-2.fc25
 qpid-proton-0.14.0-1.fc25
 qpid-proton-java-0.12.2-1.fc25
-qpid-qmf-0.32-3.fc24
+qpid-qmf-1.35.0-1.fc25
 qpid-tests-0.32-3.fc25
 qpid-tools-0.32-11.fc25
 qqwing-1.3.4-3.fc24
@@ -15827,7 +15827,7 @@ rubygem-jbuilder-2.5.0-1.fc25
 rubygem-jekyll-3.2.1-1.fc25
 rubygem-jekyll-sass-converter-1.4.0-1.fc25
 rubygem-jekyll-watch-1.5.0-2.fc25
-rubygem-jgrep-1.4.0-1.fc25
+rubygem-jgrep-1.4.1-1.fc25
 rubygem-jmespath-1.3.1-1.fc25
 rubygem-jnunemaker-matchy-0.4.0-10.fc21
 rubygem-joiner-0.3.4-3.fc24
@@ -17457,7 +17457,7 @@ tulrich-tuffy-fonts-1.28-7.fc24
 tumbler-0.1.31-3.fc24
 tuna-0.12-4.fc25
 tunctl-1.5-14.fc24
-tuned-2.7.1-1.fc25
+tuned-2.7.1-2.fc25
 tunir-0.16-2.fc25
 tunneler-1.1.1-17.fc24
 turpial-3.0-8.fc25
@@ -17497,7 +17497,7 @@ u2f-hidraw-policy-1.0.2-2.fc24
 uClibc-0.9.33.2-11.fc25
 ua-parser-java-1.3.0-6.fc25
 uberftp-2.8-4.fc24
-uboot-tools-2016.09-3.fc25
+uboot-tools-2016.09.01-1.fc25
 ubu-keyring-2016.09.01-1.fc25
 ubuntu-title-fonts-002.000-11.fc24
 ucarp-1.5.2-15.fc24

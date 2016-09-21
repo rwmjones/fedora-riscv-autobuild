@@ -40,6 +40,17 @@ type build = {
 
 let quote = Filename.quote
 
+let nvr_to_package =
+  let rex = Pcre.regexp "^(.*?)-(\\d.*)-([^-]+)$" in
+  fun nvr ->
+    try
+      let subs = Pcre.exec ~rex nvr in
+      Some { nvr = nvr;
+             name = Pcre.get_substring subs 1;
+             version = Pcre.get_substring subs 2;
+             release = Pcre.get_substring subs 3 }
+    with Not_found -> None
+
 (* Boot a disk image in qemu, running it as a background process.
  * Returns the process ID.
  *)
@@ -64,8 +75,30 @@ let boot_vm disk bootlog =
 
   pid
 
+(* Get the BuildRequires of an SRPM as a list of package names.  Not
+ * exactly made easy by the hideous output of dnf.
+ *)
+let get_build_requires srpm =
+  let cmd = sprintf "dnf provides `rpm -qRp %s` | grep -vE \"^(Last|Repo)[[:space:]]\" | grep -v \"^ \" | grep -v \"^$\" | awk '{print $1}' | sort -u"
+                    srpm in
+  let chan = open_process_in cmd in
+  let ret = ref [] in
+  (try while true do ret := input_line chan :: !ret done
+   with End_of_file -> ());
+  match close_process_in chan with
+  | WEXITED 0 ->
+     let ret = List.rev !ret in
+     (* Just want the package names ... *)
+     let ret = filter_map nvr_to_package ret in
+     let ret = List.map (fun { name = name } -> name) ret in
+     ret
+  | WEXITED _ | WSIGNALED _ | WSTOPPED _ ->
+     failwith (sprintf "%s: failed" cmd)
+
 (* Write the /init script that controls the build inside the VM. *)
-let init_script name nvr srpm =
+let init_script name nvr srpm srpm_in_disk =
+  let build_requires = get_build_requires srpm in
+
   let init = sprintf "\
 #!/bin/bash -
 
@@ -111,23 +144,28 @@ cleanup ()
 }
 trap cleanup INT QUIT TERM EXIT ERR
 
+# Display list of repositories:
+tdnf=\"tdnf --releasever %d\"
+$tdnf repolist
+$tdnf clean all
+$tdnf makecache
+
+# Pick up any updated packages:
+$tdnf -y update --best
+
 set -e
 
 # Install the build requirements.
 #
-# tdnf cannot handle versioned requirements, so just try to install
-# any package with the same name here.  The rpmbuild command will
-# do more detailed analysis and catch missing versioned deps.
+# tdnf doesn't do build requirements.  'tdnf install' *only* handles
+# pure package names, not even virtual provides like 'perl(Foo)'.
+# So we have had to compute the BRs offline on the host and place
+# the package names here.  This means that we get the x86_64 BRs
+# which could be slightly different from the riscv64 BRs.
 #
-# Also some packages have no BuildRequires, so handle that too.
-brs=\"$(
-    rpm -qRp %s |
-        awk '{print $1}' |
-        grep -v '^rpmlib(' ||:
-    )\"
-if [ -n \"$brs\" ]; then
-    tdnf --releasever %d install $brs >& /root.log
-fi
+# XXX When we have compiled full dnf, replace this with
+# 'dnf builddep' command.
+if %s; then $tdnf -y install --best %s >& /root.log; fi
 
 # Build the package.
 rpmbuild --rebuild %s >& /build.log
@@ -137,7 +175,12 @@ rpmbuild --rebuild %s >& /build.log
 touch /buildok
 
 # cleanup() is called automatically here.
-" nvr srpm releasever srpm in
+"
+    nvr releasever
+    (string_of_bool (build_requires <> []))
+    (String.concat " " (List.map quote build_requires))
+    srpm_in_disk in
+
   init
 
 (* Download a source RPM from Koji. *)
@@ -218,8 +261,26 @@ let start_build pkg =
        let srpm_in_disk = sprintf "/var/tmp/%s.src.rpm" nvr in
        g#upload srpm srpm_in_disk;
 
+       (* Copy the previously built RPMs into the disk and set up
+        * a local repo for tdnf to use.
+        *)
+       g#copy_in "RPMS" "/var/tmp";
+       g#write "/etc/yum.repos.d/local.repo" "\
+[local-riscv64]
+name=Local riscv64 RPMS
+baseurl=file:///var/tmp/RPMS/riscv64
+enabled=1
+gpgcheck=0
+
+[local-noarch]
+name=Local noarch RPMS
+baseurl=file:///var/tmp/RPMS/noarch
+enabled=1
+gpgcheck=0
+";
+
        (* Create an init script and insert it into the disk image. *)
-       let init = init_script name nvr srpm_in_disk in
+       let init = init_script name nvr srpm srpm_in_disk in
        g#write "/init" init;
        g#chmod 0o755 "/init";
 
@@ -239,17 +300,11 @@ let start_build pkg =
      )
 
 let createrepo () =
-  let cmd = "cd RPMS && createrepo ." in
-  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
-
-let add_rpms_to_stage4 () =
-  (* XXX What needs to be done here:
-   * (1) Upload the RPMS directory including the repodata into the
-   * stage4-disk.img file.
-   * (2) Create /etc/yum.repos.d/local.repo pointing to this directory.
-   * (3) Check that tdnf can use this repo.
-   *)
-  ()
+  List.iter (
+    fun dir ->
+      let cmd = sprintf "cd %s && createrepo ." dir in
+      if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
+  ) [ "RPMS/riscv64"; "RPMS/noarch" ]
 
 let rsync () =
   (* Don't use --delete.  Let the files accumulate at the remote side. *)
@@ -286,11 +341,8 @@ let finish_build build =
       (*g#copy_out "/rpmbuild/SRPMS" ".";*)
       copy_file build.srpm "SRPMS/";
 
-      (* We have a new RPM, so recreate the repository and add it to
-       * the stage4 master disk image.
-       *)
+      (* We have a new RPM, so recreate the repodata. *)
       createrepo ();
-      add_rpms_to_stage4 ();
       true
     )
     else false in
@@ -318,17 +370,6 @@ let finish_build build =
 
   (* We should have at least a boot.log, and maybe much more, so rsync. *)
   rsync ()
-
-let nvr_to_package =
-  let rex = Pcre.regexp "^(.*?)-(\\d.*)-([^-]+)$" in
-  fun nvr ->
-    try
-      let subs = Pcre.exec ~rex nvr in
-      Some { nvr = nvr;
-             name = Pcre.get_substring subs 1;
-             version = Pcre.get_substring subs 2;
-             release = Pcre.get_substring subs 3 }
-    with Not_found -> None
 
 module StringSet = Set.Make (String)
 

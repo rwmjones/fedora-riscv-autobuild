@@ -21,9 +21,9 @@ step fails then the build.log is saved so you can check it later.
 
 (4) If the build is successful, the result is copied out of the VM.
 
-(5) If the build is successful, then a new stage4 disk image is built
-which feeds back into step (2) above.  In other words, future builds
-will be able to use the new package almost immediately.
+(5) If the build is successful, then the resulting RPMs are added to
+future builds, feeding back into step (2) above.  In other words,
+future builds will be able to use the new package almost immediately.
 
 (6) The root.log, build.log, any RPMs and SRPMs, and any new disk
 image is rsynced to the public webserver at
