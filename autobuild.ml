@@ -380,8 +380,8 @@ let rec loop ~packages ~running =
 
   let nr_running = StringMap.cardinal running in
 
-  printf "Num builds running: %d (max: %d)\n%!" nr_running max_builds;
-  printf "Num packages waiting to start: %d\n%!" (List.length packages);
+  printf "Running: %d (max: %d) Waiting to start: %d\n%!"
+         nr_running max_builds (List.length packages);
 
   let packages, running =
     (* If we've maxed out the number of builds, or there are no
