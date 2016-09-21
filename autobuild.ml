@@ -353,7 +353,7 @@ module StringMap = Map.Make (String)
 
 let packages_from_command_line = Array.length Sys.argv >= 2
 
-let rec loop ~packages ~running =
+let rec loop packages running =
   (* If we have no packages, look for more. *)
   let packages =
     if packages = [] && not packages_from_command_line then
@@ -407,7 +407,7 @@ let rec loop ~packages ~running =
       (packages, running)
     ) in
 
-  loop ~packages ~running
+  loop packages running
 
 let () =
   let packages =
@@ -419,4 +419,4 @@ let () =
     )
     else [] in
   let running = StringMap.empty in
-  loop ~packages ~running
+  loop packages running
