@@ -238,14 +238,23 @@ let start_build pkg =
               disk = disk }
      )
 
-let rsync () =
-  () (* XXX *)
-
 let createrepo () =
-  () (* XXX *)
+  let cmd = "cd RPMS && createrepo ." in
+  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
 let add_rpms_to_stage4 () =
-  () (* XXX *)
+  (* XXX What needs to be done here:
+   * (1) Upload the RPMS directory including the repodata into the
+   * stage4-disk.img file.
+   * (2) Create /etc/yum.repos.d/local.repo pointing to this directory.
+   * (3) Check that tdnf can use this repo.
+   *)
+  ()
+
+let rsync () =
+  (* Don't use --delete.  Let the files accumulate at the remote side. *)
+  let cmd = "rsync -av RPMS SRPMS logs fedorapeople.org:/project/risc-v" in
+  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
 (* Finish off a build (it has already been reaped by waitpid). *)
 let finish_build build =
