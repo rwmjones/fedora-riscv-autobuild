@@ -140,9 +140,9 @@ let download_srpm nvr =
 (* This code is basically copied from
  * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
  *)
-let open_disk disk =
+let open_disk ?readonly disk =
   let g = new Guestfs.guestfs () in
-  g#add_drive_opts disk ~format:"raw";
+  g#add_drive_opts disk ~format:"raw" ?readonly;
   g#launch ();
 
   let roots = g#inspect_os () in
@@ -229,7 +229,7 @@ let add_rpms_to_stage4 () =
 
 (* Finish off a build (it has already been reaped by waitpid). *)
 let finish_build build =
-  let g = open_disk build.disk in
+  let g = open_disk ~readonly:true build.disk in
 
   (* Save root.log if it was created. *)
   (try g#download "/root.log" (build.logdir ^ "/root.log");
@@ -261,6 +261,8 @@ let finish_build build =
     printf "%s failed to build, see %s/*.log\n"
            build.pkg.nvr build.logdir
   );
+
+  g#close ();
 
   (* Delete the disk image. *)
   unlink build.disk;
