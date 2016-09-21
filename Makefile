@@ -22,4 +22,13 @@ depend:
 	ocamldep *.ml > .depend
 
 clean:
-	rm -f tmp/*
+	rm -f riscv-autobuild
+	rm -f *.cmo *.cmi
+	rm -f *~
+	rm -f tmp/*-disk.img
+
+veryclean: clean
+	rm -f tmp/*.src.rpm
+
+distclean: veryclean
+	rm -f vmlinux stage4-disk.img
