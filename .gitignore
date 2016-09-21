@@ -1,5 +1,8 @@
 *~
+*.cmi
+*.cmo
 
+/riscv-autobuild
 /stage4-disk.img
 /vmlinux
 

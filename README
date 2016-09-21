@@ -33,10 +33,13 @@ How to run it:
 
 (1) Install and/or download any requirements (see below).
 
-(2) Edit the riscv-autobuild script and adjust the configuration
-section at the top to suit.
+(2) Edit the 'config.ml' file and adjust the configuration to suit.
 
-(3) Run this command as a non-root user:
+(3) Build the program:
+
+  make
+
+(4) Run this command as a non-root user:
 
   ./riscv-autobuild
 
@@ -51,13 +54,15 @@ Requirements:
 
  - Recent Fedora.  It probably works with RHEL or CentOS 7 too.
 
- - Perl
+ - OCaml compiler (ocamlc)
 
  - koji command
 
  - riscv-qemu from https://copr.fedorainfracloud.org/coprs/rjones/riscv/
 
- - perl-Sys-Guestfs
+ - ocaml-libguestfs-devel
+
+ - ocaml-pcre-devel
 
  - createrepo
 
