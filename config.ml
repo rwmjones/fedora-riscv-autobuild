@@ -27,4 +27,4 @@ let releasever = 25
 let new_builds_tag = sprintf "f%d-updates-candidate" releasever
 
 (* Poll interval (in seconds). *)
-let poll_interval = 5 * 60
+let poll_interval = 10 * 60

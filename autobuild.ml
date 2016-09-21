@@ -381,7 +381,7 @@ module StringSet = Set.Make (String)
 let get_latest_builds () =
   let ret = ref [] in
 
-  (* Only run the koji command at most once every 10 minutes, to
+  (* Only run the koji command at most once every poll_interval, to
    * avoid overloading Koji and because there's no reason to run
    * it more often than that.  It also makes the implementation of
    * the 'loop' function below simpler since it lets us call this
@@ -395,7 +395,7 @@ let get_latest_builds () =
     | None -> max_float
     | Some { st_mtime = mtime } -> gettimeofday () -. mtime in
 
-  if age > 600. then (
+  if age >= float_of_int (poll_interval - 5) then (
     message "Getting latest packages from Koji ...";
     let cmd =
       sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds.new"
