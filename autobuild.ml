@@ -288,14 +288,14 @@ let finish_build build =
    | _, _, true ->
       message ~col:ansi_green "COMPLETED: %s" build.pkg.nvr
    | _, true, false ->
-      message ~col:ansi_red "BUILD FAILED: %s (see %s/build.log)"
+      message ~col:ansi_red "FAIL: Build failure: %s (see %s/build.log)"
               build.pkg.nvr build.logdir
    | true, false, false ->
       message ~col:ansi_magenta (* this is expected, not really a failure *)
-              "MISSING DEPENDENCIES: %s (see %s/root.log)"
+              "MISSING DEPS: %s (see %s/root.log)"
               build.pkg.nvr build.logdir
    | _ ->
-      message ~col:ansi_red "UNKNOWN FAILURE: %s (see %s/boot.log)"
+      message ~col:ansi_red "FAIL: Unknown failure: %s (see %s/boot.log)"
               build.pkg.nvr build.logdir
   );
 
