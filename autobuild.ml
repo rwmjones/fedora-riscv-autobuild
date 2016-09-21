@@ -289,38 +289,53 @@ module StringSet = Set.Make (String)
 let get_latest_builds () =
   let ret = ref [] in
 
-  let cmd =
-    sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds.new"
-            new_builds_tag in
-  if Sys.command cmd <> 0 then
-    eprintf "warning: koji command failed\n%!"
-  else (
-    if Sys.file_exists "koji-builds" then (
-      (* Read the old file and the new file and return any new packages. *)
+  (* Only run the koji command at most once every 10 minutes, to
+   * avoid overloading Koji and because there's no reason to run
+   * it more often than that.  It also makes the implementation of
+   * the 'loop' function below simpler since it lets us call this
+   * function whenever we want.
+   *)
+  let statbuf =
+    try Some (stat "koji-builds")
+    with Unix_error (ENOENT, _, _) -> None in
+  let age =
+    match statbuf with
+    | None -> max_float
+    | Some { st_mtime = mtime } -> gettimeofday () -. mtime in
 
-      let read_koji_builds filename =
-        let chan = open_in filename in
-        let set = ref StringSet.empty in
-        (try while true do set := StringSet.add (input_line chan) !set done
-         with End_of_file -> ());
-        close_in chan;
-        !set
-      in
+  if age > 600. then (
+    let cmd =
+      sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds.new"
+              new_builds_tag in
+    if Sys.command cmd <> 0 then
+      eprintf "warning: koji command failed\n%!"
+    else (
+      if statbuf <> None (* "koji-builds" exists *) then (
+        (* Read the old file and the new file and return any new packages. *)
+        let read_koji_builds filename =
+          let chan = open_in filename in
+          let set = ref StringSet.empty in
+          (try while true do set := StringSet.add (input_line chan) !set done
+           with End_of_file -> ());
+          close_in chan;
+          !set
+        in
 
-      let olds = read_koji_builds "koji-builds" in
-      let news = read_koji_builds "koji-builds.new" in
+        let olds = read_koji_builds "koji-builds" in
+        let news = read_koji_builds "koji-builds.new" in
 
-      StringSet.iter (
-        fun nvr ->
-          if not (StringSet.mem nvr olds) then (
-            let pkg = nvr_to_package nvr in
-            match pkg with
-            | None -> ()
-            | Some pkg -> ret := pkg :: !ret
-          )
-      ) news;
-    );
-    rename "koji-builds.new" "koji-builds";
+        StringSet.iter (
+          fun nvr ->
+            if not (StringSet.mem nvr olds) then (
+              let pkg = nvr_to_package nvr in
+              match pkg with
+              | None -> ()
+              | Some pkg -> ret := pkg :: !ret
+            )
+        ) news;
+      );
+      rename "koji-builds.new" "koji-builds";
+    )
   );
 
   !ret
