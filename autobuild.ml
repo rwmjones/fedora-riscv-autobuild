@@ -153,6 +153,11 @@ let download_srpm nvr =
       None (* Download failed. *)
   )
 
+(* Just a wrapper around the 'cp' command. *)
+let copy_file src dst =
+  let cmd = sprintf "cp %s %s" (quote src) (quote dst) in
+  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
+
 (* This code is basically copied from
  * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
  *)
@@ -205,8 +210,7 @@ let start_build pkg =
      else (
        (* Take an atomic full copy of the stage4 disk image. *)
        let disk = sprintf "tmp/%s-disk.img" name in
-       let cmd = sprintf "cp stage4-disk.img %s" (quote disk) in
-       if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+       copy_file "stage4-disk.img" disk;
 
        let g = open_disk disk in
 
@@ -266,8 +270,12 @@ let finish_build build =
       close_out (open_out (sprintf "%s/buildok" build.logdir));
 
       (* Save the RPMs and SRPM. *)
-      g#copy_out "/rpmbuild/RPMS" "RPMS";
-      g#copy_out "/rpmbuild/SRPMS" "SRPMS";
+      g#copy_out "/rpmbuild/RPMS" ".";
+      (* rpmbuild --rebuild doesn't write out an SRPM, so copy
+       * the one from Koji instead.
+       *)
+      (*g#copy_out "/rpmbuild/SRPMS" ".";*)
+      copy_file build.srpm "SRPMS/";
 
       (* We have a new RPM, so recreate the repository and add it to
        * the stage4 master disk image.

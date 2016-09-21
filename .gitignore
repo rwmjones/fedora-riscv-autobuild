@@ -8,5 +8,8 @@
 
 /logs/*
 
+/RPMS/*
+/SRPMS/*
+
 /tmp/*-disk.img
 /tmp/*.rpm
