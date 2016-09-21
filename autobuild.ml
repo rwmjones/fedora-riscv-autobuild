@@ -131,11 +131,16 @@ touch /buildok
 
 (* Download a source RPM from Koji. *)
 let download_srpm nvr =
-  let cmd = sprintf "cd tmp && koji download-build -a src %s" (quote nvr) in
-  if Sys.command cmd == 0 then
-    Some (sprintf "tmp/%s.src.rpm" nvr) (* Local filename. *)
-  else
-    None (* Download failed. *)
+  let local_filename = sprintf "tmp/%s.src.rpm" nvr in
+  if Sys.file_exists local_filename then
+    Some local_filename
+  else (
+    let cmd = sprintf "cd tmp && koji download-build -a src %s" (quote nvr) in
+    if Sys.command cmd == 0 then
+      Some local_filename
+    else
+      None (* Download failed. *)
+  )
 
 (* This code is basically copied from
  * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
