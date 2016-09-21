@@ -188,7 +188,7 @@ let start_build pkg =
       * try it again.
       *)
      if Sys.file_exists (sprintf "%s/buildok" logdir) then (
-       printf "%s already built\n" nvr;
+       printf "%s already built\n%!" nvr;
        None
      )
      else (
@@ -212,7 +212,7 @@ let start_build pkg =
        g#shutdown ();
        g#close ();
 
-       printf "%s build starting\n" nvr;
+       printf "%s build starting\n%!" nvr;
 
        (* Boot the VM. *)
        let bootlog = sprintf "%s/boot.log" logdir in
@@ -246,7 +246,7 @@ let finish_build build =
 
   (* Did the build finish successfully? *)
   if g#exists "/buildok" then (
-    printf "%s built successfully!\n" build.pkg.nvr;
+    printf "%s built successfully!\n%!" build.pkg.nvr;
 
     (* We save a flag in the directory so we don't try to
      * build the package again.
@@ -263,7 +263,7 @@ let finish_build build =
     createrepo ();
     add_rpms_to_stage4 ();
   ) else (
-    printf "%s failed to build, see %s/*.log\n"
+    printf "%s failed to build, see %s/*.log\n%!"
            build.pkg.nvr build.logdir
   );
 
