@@ -393,18 +393,28 @@ let rec loop packages running =
       (packages, running)
     )
     else (
-      (* Take a package from the list and start running a build. *)
-      let pkg, packages = List.hd packages, List.tl packages in
-      let name = pkg.name in
-      let running =
-        if not (StringMap.mem name running) then (
-          let build = start_build pkg in
-          match build with
-          | None -> running
-          | Some build -> StringMap.add name build running
+      (* Take packages from the list and start building them. *)
+      let rec start_builds packages running =
+        if packages = [] || StringMap.cardinal running >= max_builds then
+          (packages, running) (* no more packages or too many builds *)
+        else (
+          let pkg, packages = List.hd packages, List.tl packages in
+          let name = pkg.name in
+          (* If the package is already building, skip it and keep looping. *)
+          if StringMap.mem name running then
+            start_builds packages running
+          else (
+            let build = start_build pkg in
+            let running =
+              match build with
+              | None -> running
+              | Some build -> StringMap.add name build running in
+            start_builds packages running
+          )
         )
-        else running in
-      (packages, running)
+      in
+
+      start_builds packages running
     ) in
 
   loop packages running
