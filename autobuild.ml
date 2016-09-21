@@ -116,7 +116,7 @@ set -e
 # Install the build requirements.
 # tdnf cannot handle versioned requirements, so just try to
 # install any package with the same name here.
-tdnf --releasever %d install `rpm -qRp %s | awk '{print $1}'` >& /root.log
+tdnf --releasever %d install `rpm -qRp %s | awk '{print $1}' | grep ^rpmlib\\( ` >& /root.log
 
 # Build the package.
 rpmbuild --rebuild %s >& /build.log
