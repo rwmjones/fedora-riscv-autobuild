@@ -306,6 +306,7 @@ let get_latest_builds () =
     | Some { st_mtime = mtime } -> gettimeofday () -. mtime in
 
   if age > 600. then (
+    printf "Getting latest packages from Koji ...\n%!";
     let cmd =
       sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds.new"
               new_builds_tag in
