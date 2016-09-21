@@ -1,5 +1,5 @@
-autobuild.cmo : config.cmo
-autobuild.cmx : config.cmx
+autobuild.cmo : utils.cmo config.cmo
+autobuild.cmx : utils.cmx config.cmx
 config.cmo :
 config.cmx :
 utils.cmo :

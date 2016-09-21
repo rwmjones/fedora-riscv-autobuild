@@ -188,7 +188,7 @@ let start_build pkg =
       * try it again.
       *)
      if Sys.file_exists (sprintf "%s/buildok" logdir) then (
-       printf "%s already built\n%!" nvr;
+       message "%s already built" nvr;
        None
      )
      else (
@@ -212,7 +212,7 @@ let start_build pkg =
        g#shutdown ();
        g#close ();
 
-       printf "%s build starting\n%!" nvr;
+       message "%s build starting" nvr;
 
        (* Boot the VM. *)
        let bootlog = sprintf "%s/boot.log" logdir in
@@ -275,24 +275,17 @@ let finish_build build =
   (* Print the build status. *)
   (match got_root_log, got_build_log, buildok with
    | _, _, true ->
-      ansi_green ();
-      printf "COMPLETED: %s\n" build.pkg.nvr;
-      ansi_restore ();
+      message ~col:ansi_green "COMPLETED: %s" build.pkg.nvr
    | _, true, false ->
-      ansi_red ();
-      printf "BUILD FAILED: %s (see %s/build.log)\n"
-             build.pkg.nvr build.logdir;
-      ansi_restore ();
+      message ~col:ansi_red "BUILD FAILED: %s (see %s/build.log)"
+              build.pkg.nvr build.logdir
    | true, false, false ->
-      ansi_magenta (); (* this is expected, not really a failure *)
-      printf "MISSING DEPENDENCIES: %s (see %s/root.log)\n"
-             build.pkg.nvr build.logdir;
-      ansi_restore ();
+      message ~col:ansi_magenta (* this is expected, not really a failure *)
+              "MISSING DEPENDENCIES: %s (see %s/root.log)"
+              build.pkg.nvr build.logdir
    | _ ->
-      ansi_red ();
-      printf "UNKNOWN FAILURE: %s (see %s/boot.log)\n"
-             build.pkg.nvr build.logdir;
-      ansi_restore ();
+      message ~col:ansi_red "UNKNOWN FAILURE: %s (see %s/boot.log)"
+              build.pkg.nvr build.logdir
   );
 
   (* We should have at least a boot.log, and maybe much more, so rsync. *)
@@ -334,7 +327,7 @@ let get_latest_builds () =
     | Some { st_mtime = mtime } -> gettimeofday () -. mtime in
 
   if age > 600. then (
-    printf "Getting latest packages from Koji ...\n%!";
+    message "Getting latest packages from Koji ...";
     let cmd =
       sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds.new"
               new_builds_tag in
@@ -408,17 +401,15 @@ let rec loop packages running =
 
   let nr_running = StringMap.cardinal running in
 
-  ansi_blue ();
-  printf "Running: %d (max: %d) Waiting to start: %d\n%!"
-         nr_running max_builds (List.length packages);
-  ansi_restore ();
+  message ~col:ansi_blue "Running: %d (max: %d) Waiting to start: %d"
+          nr_running max_builds (List.length packages);
 
   let packages, running =
     (* If we've maxed out the number of builds, or there are no
      * packages to build, sleep for a bit.
      *)
     if nr_running >= max_builds || packages = [] then (
-      printf "Sleeping for %d seconds ...\n%!" poll_interval;
+      message "Sleeping for %d seconds ..." poll_interval;
       sleep poll_interval;
       (packages, running)
     )

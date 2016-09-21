@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
+open Printf
+
 let rec filter_map f = function
   | [] -> []
   | x :: xs ->
@@ -36,3 +38,19 @@ let ansi_magenta ?(chan = stdout) () =
   if istty chan then output_string chan "\x1b[1;35m"
 let ansi_restore ?(chan = stdout) () =
   if istty chan then output_string chan "\x1b[0m"
+
+(* Print message, followed by newline and flushing the output channel. *)
+let message ?col ?(chan = stdout) fs =
+  (* This annotation lets type inference figure out that we need
+   * to call the function with an optional ?chan not a required ~chan.
+   *)
+  ignore (col : (?chan:out_channel -> unit -> unit) option);
+
+  let display str =
+    (match col with None -> () | Some col -> col ~chan ());
+    fprintf chan "%s" str;
+    (match col with None -> () | Some _ -> ansi_restore ~chan ());
+    output_char chan '\n';
+    Pervasives.flush chan;
+  in
+  ksprintf display fs
