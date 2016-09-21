@@ -21,3 +21,18 @@ let rec filter_map f = function
       match f x with
       | Some y -> y :: filter_map f xs
       | None -> filter_map f xs
+
+(* ANSI terminal colours. *)
+let istty chan =
+  Unix.isatty (Unix.descr_of_out_channel chan)
+
+let ansi_green ?(chan = stdout) () =
+  if istty chan then output_string chan "\x1b[0;32m"
+let ansi_red ?(chan = stdout) () =
+  if istty chan then output_string chan "\x1b[1;31m"
+let ansi_blue ?(chan = stdout) () =
+  if istty chan then output_string chan "\x1b[1;34m"
+let ansi_magenta ?(chan = stdout) () =
+  if istty chan then output_string chan "\x1b[1;35m"
+let ansi_restore ?(chan = stdout) () =
+  if istty chan then output_string chan "\x1b[0m"

@@ -237,40 +237,63 @@ let finish_build build =
   let g = open_disk ~readonly:true build.disk in
 
   (* Save root.log if it was created. *)
-  (try g#download "/root.log" (build.logdir ^ "/root.log");
-    with Guestfs.Error _ -> ());
+  let got_root_log =
+    try g#download "/root.log" (build.logdir ^ "/root.log"); true
+    with Guestfs.Error _ -> false in
 
   (* Save build.log if it was created. *)
-  (try g#download "/build.log" (build.logdir ^ "/build.log");
-   with Guestfs.Error _ -> ());
+  let got_build_log =
+    try g#download "/build.log" (build.logdir ^ "/build.log"); true
+    with Guestfs.Error _ -> false in
 
   (* Did the build finish successfully? *)
-  if g#exists "/buildok" then (
-    printf "%s built successfully!\n%!" build.pkg.nvr;
+  let buildok =
+    if g#exists "/buildok" then (
+      (* We save a flag in the directory so we don't try to
+       * build the package again.
+       *)
+      close_out (open_out (sprintf "%s/buildok" build.logdir));
 
-    (* We save a flag in the directory so we don't try to
-     * build the package again.
-     *)
-    close_out (open_out (sprintf "%s/buildok" build.logdir));
+      (* Save the RPMs and SRPM. *)
+      g#copy_out "/rpmbuild/RPMS" "RPMS";
+      g#copy_out "/rpmbuild/SRPMS" "SRPMS";
 
-    (* Save the RPMs and SRPM. *)
-    g#copy_out "/rpmbuild/RPMS" "RPMS";
-    g#copy_out "/rpmbuild/SRPMS" "SRPMS";
-
-    (* We have a new RPM, so recreate the repository and add it to
-     * the stage4 master disk image.
-     *)
-    createrepo ();
-    add_rpms_to_stage4 ();
-  ) else (
-    printf "%s failed to build, see %s/*.log\n%!"
-           build.pkg.nvr build.logdir
-  );
+      (* We have a new RPM, so recreate the repository and add it to
+       * the stage4 master disk image.
+       *)
+      createrepo ();
+      add_rpms_to_stage4 ();
+      true
+    )
+    else false in
 
   g#close ();
 
   (* Delete the disk image. *)
   unlink build.disk;
+
+  (* Print the build status. *)
+  (match got_root_log, got_build_log, buildok with
+   | _, _, true ->
+      ansi_green ();
+      printf "COMPLETED: %s\n" build.pkg.nvr;
+      ansi_restore ();
+   | _, true, false ->
+      ansi_red ();
+      printf "BUILD FAILED: %s (see %s/build.log)\n"
+             build.pkg.nvr build.logdir;
+      ansi_restore ();
+   | true, false, false ->
+      ansi_magenta (); (* this is expected, not really a failure *)
+      printf "MISSING DEPENDENCIES: %s (see %s/root.log)\n"
+             build.pkg.nvr build.logdir;
+      ansi_restore ();
+   | _ ->
+      ansi_red ();
+      printf "UNKNOWN FAILURE: %s (see %s/boot.log)\n"
+             build.pkg.nvr build.logdir;
+      ansi_restore ();
+  );
 
   (* We should have at least a boot.log, and maybe much more, so rsync. *)
   rsync ()
@@ -385,8 +408,10 @@ let rec loop packages running =
 
   let nr_running = StringMap.cardinal running in
 
+  ansi_blue ();
   printf "Running: %d (max: %d) Waiting to start: %d\n%!"
          nr_running max_builds (List.length packages);
+  ansi_restore ();
 
   let packages, running =
     (* If we've maxed out the number of builds, or there are no
