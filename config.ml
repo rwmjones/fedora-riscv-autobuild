@@ -28,3 +28,12 @@ let new_builds_tag = sprintf "f%d-updates-candidate" releasever
 
 (* Poll interval (in seconds). *)
 let poll_interval = 10 * 60
+
+(* Blacklisted packages that we ignore if they appear in Koji. *)
+let blacklist = [
+  "kernel";
+  "glibc";
+  "binutils";
+  "gcc";
+  "gdb";
+]

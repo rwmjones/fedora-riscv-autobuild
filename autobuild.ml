@@ -433,6 +433,9 @@ let get_latest_builds () =
 
   !ret
 
+(* Remove packages which are on the blacklist. *)
+let not_blacklisted { name = name } = not (List.mem name blacklist)
+
 (* The main loop.  See README for how this works. *)
 
 (* The running list is a map from RPM name to build.  Storing the
@@ -447,7 +450,7 @@ let rec loop packages running =
   (* If we have no packages, look for more. *)
   let packages =
     if packages = [] && not packages_from_command_line then
-      get_latest_builds ()
+      List.filter not_blacklisted (get_latest_builds ())
     else
       packages in
 
