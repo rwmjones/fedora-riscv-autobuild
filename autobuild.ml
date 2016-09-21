@@ -258,7 +258,7 @@ let finish_build build =
     createrepo ();
     add_rpms_to_stage4 ();
   ) else (
-    printf "%s failed to build, see %s/boot.log\n"
+    printf "%s failed to build, see %s/*.log\n"
            build.pkg.nvr build.logdir
   );
 
