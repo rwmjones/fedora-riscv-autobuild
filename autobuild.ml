@@ -114,9 +114,20 @@ trap cleanup INT QUIT TERM EXIT ERR
 set -e
 
 # Install the build requirements.
-# tdnf cannot handle versioned requirements, so just try to
-# install any package with the same name here.
-tdnf --releasever %d install `rpm -qRp %s | awk '{print $1}' | grep ^rpmlib\\( ` >& /root.log
+#
+# tdnf cannot handle versioned requirements, so just try to install
+# any package with the same name here.  The rpmbuild command will
+# do more detailed analysis and catch missing versioned deps.
+#
+# Also some packages have no BuildRequires, so handle that too.
+brs=\"$(
+    rpm -qRp %s |
+        awk '{print $1}' |
+        grep -v '^rpmlib(' ||:
+    )\"
+if [ -n \"$brs\" ]; then
+    tdnf --releasever %d install $brs >& /root.log
+fi
 
 # Build the package.
 rpmbuild --rebuild %s >& /build.log
@@ -126,7 +137,7 @@ rpmbuild --rebuild %s >& /build.log
 touch /buildok
 
 # cleanup() is called automatically here.
-" nvr releasever srpm srpm in
+" nvr srpm releasever srpm in
   init
 
 (* Download a source RPM from Koji. *)
