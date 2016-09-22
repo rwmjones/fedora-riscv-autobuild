@@ -455,11 +455,9 @@ let rec loop packages running =
       packages in
 
   (* Check if any builds have finished, and reap them. *)
-  let rec reap_builds running =
-    let build = try Some (StringMap.choose running) with Not_found -> None in
-    match build with
-    | None -> running
-    | Some (name, build) ->
+  let rec reap_builds running = function
+    | [] -> running
+    | (name, build) :: rest ->
        let pid, _ = waitpid [WNOHANG] build.pid in
        let running =
          if pid > 0 then (
@@ -467,9 +465,9 @@ let rec loop packages running =
            StringMap.remove name running
          )
          else running in
-       reap_builds running
+       reap_builds running rest
   in
-  let running = reap_builds running in
+  let running = reap_builds running (StringMap.bindings running) in
 
   let nr_running = StringMap.cardinal running in
 
@@ -477,19 +475,21 @@ let rec loop packages running =
           nr_running max_builds (List.length packages);
 
   let packages, running =
-    if nr_running >= max_builds || packages = [] then (
+    if nr_running > 0 && packages = [] then (
+      (* If some builds are running but there are no packages waiting
+       * to be added, we want to go back and check if the builds have
+       * finished.  However do a short sleep first so we're not
+       * busy-waiting.
+       *)
+      sleep 10;
+      (packages, running)
+    )
+    else if nr_running >= max_builds || packages = [] then (
       (* If we've maxed out the number of builds, or there are no
        * packages to build, sleep for a bit.
        *)
       message "Sleeping for %d seconds ..." poll_interval;
       sleep poll_interval;
-      (packages, running)
-    )
-    else if nr_running > 0 && packages = [] then (
-      (* If some builds are running but there are no packages waiting
-       * to be added, then do a short sleep so we don't busy wait.
-       *)
-      sleep 10;
       (packages, running)
     )
     else (
