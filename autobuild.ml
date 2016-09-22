@@ -38,7 +38,14 @@ type build = {
   srpm : string;                (* Path to the SRPM file. *)
 }
 
+type build_status =
+  | Successful of package * string (* build.log *)
+  | Build_failure of package * string (* build.log *)
+  | Missing_deps of package * string (* root.log *)
+  | Unknown_failure of package * string (* boot.log *)
+
 let quote = Filename.quote
+let (//) = Filename.concat
 
 let nvr_to_package =
   let rex = Pcre.regexp "^(.*?)-(\\d.*)-([^-]+)$" in
@@ -352,21 +359,52 @@ let finish_build build =
   (* Delete the disk image. *)
   unlink build.disk;
 
+  (* Determine the build status. *)
+  let build_status =
+    match got_root_log, got_build_log, buildok with
+    | _, _, true ->
+       Successful (build.pkg, build.logdir // "build.log")
+    | _, true, false ->
+       Build_failure (build.pkg, build.logdir // "build.log")
+    | true, false, false ->
+       Missing_deps (build.pkg, build.logdir // "root.log")
+    | _ ->
+       Unknown_failure (build.pkg, build.logdir // "boot.log") in
+
   (* Print the build status. *)
-  (match got_root_log, got_build_log, buildok with
-   | _, _, true ->
-      message ~col:ansi_green "COMPLETED: %s" build.pkg.nvr
-   | _, true, false ->
-      message ~col:ansi_red "FAIL: Build failure: %s (see %s/build.log)"
-              build.pkg.nvr build.logdir
-   | true, false, false ->
+  (match build_status with
+   | Successful (pkg, logfile) ->
+      message ~col:ansi_green "COMPLETED: %s" pkg.nvr
+   | Build_failure (pkg, logfile) ->
+      message ~col:ansi_red "FAIL: Build failure: %s (see %s)"
+              pkg.nvr logfile
+   | Missing_deps (pkg, logfile) ->
       message ~col:ansi_magenta (* this is expected, not really a failure *)
-              "MISSING DEPS: %s (see %s/root.log)"
-              build.pkg.nvr build.logdir
-   | _ ->
-      message ~col:ansi_red "FAIL: Unknown failure: %s (see %s/boot.log)"
-              build.pkg.nvr build.logdir
+              "MISSING DEPS: %s (see %s)" pkg.nvr logfile
+   | Unknown_failure (pkg, logfile) ->
+      message ~col:ansi_red "FAIL: Unknown failure: %s (see %s)"
+              pkg.nvr logfile
   );
+
+  (* Add the build status to logs/status.html *)
+  let chan = open_out_gen [Open_wronly; Open_append; Open_creat; Open_text]
+                          0o644 "logs/status.html" in
+  fprintf chan "<br>\n";
+  (match build_status with
+   | Successful (pkg, logfile) ->
+      fprintf chan "<span style=\"color:green;\">COMPLETED:</span> %s (<a href=\"../%s\">build.log</a>)\n"
+              pkg.nvr logfile
+   | Build_failure (pkg, logfile) ->
+      fprintf chan "<span style=\"color:red;\">FAIL:</span> Build failure: %s (<a href=\"../%s\">build.log</a>)\n"
+              pkg.nvr logfile
+   | Missing_deps (pkg, logfile) ->
+      fprintf chan "<span style=\"color:purple;\">MISSING DEPS:</span> %s (<a href=\"../%s\">root.log</a>)\n"
+              pkg.nvr logfile
+   | Unknown_failure (pkg, logfile) ->
+      fprintf chan "<span style=\"color:red;\">FAIL:</span> Unknown failure: %s (<a href=\"../%s\">boot.log</a>)\n"
+              pkg.nvr logfile
+  );
+  close_out chan;
 
   (* We should have at least a boot.log, and maybe much more, so rsync. *)
   rsync ()
