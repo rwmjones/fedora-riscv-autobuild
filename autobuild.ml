@@ -433,8 +433,58 @@ let get_latest_builds () =
 
   !ret
 
+(* Return a list of all packages, used for mass rebuilds. *)
+let get_mass_rebuild_packages () =
+  message "Getting list of all Fedora packages from Koji ...";
+  let cmd =
+    sprintf "koji latest-pkg --quiet --all %s | awk '{print $1}' > koji-builds"
+            new_builds_tag in
+  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+
+  let read_koji_builds filename =
+    let chan = open_in filename in
+    let ret = ref [] in
+    (try while true do ret := input_line chan :: !ret done
+     with End_of_file -> ());
+    close_in chan;
+    List.rev !ret
+  in
+
+  let nvrs = read_koji_builds "koji-builds" in
+  let packages = filter_map nvr_to_package nvrs in
+  packages
+
 (* Remove packages which are on the blacklist. *)
 let not_blacklisted { name = name } = not (List.mem name blacklist)
+
+(* Parse the command line. *)
+let mass_rebuild = ref false
+let argspec =
+  Arg.align [
+    "--mass-rebuild", Arg.Set mass_rebuild, "Rebuild every package";
+  ]
+let packages_from_command_line = ref []
+let anon_fun str =
+  packages_from_command_line := str :: !packages_from_command_line
+let usage_msg =
+  "riscv-autobuild : auto package builder for Fedora/RISC-V
+
+SUMMARY
+  ./riscv-autobuild
+     Pick up new packages from Koji and try rebuilding them.
+
+  ./riscv-autobuild NVR [NVR ...]
+     Build specified packages (list their NVR(s) on the command line).
+
+  ./riscv-autobuild --mass-rebuild
+     Try to build every package in Fedora.
+
+OPTIONS"
+let () = Arg.parse argspec anon_fun usage_msg
+let mass_rebuild = !mass_rebuild
+let packages_from_command_line =
+  let nvrs = List.rev !packages_from_command_line in
+  filter_map nvr_to_package nvrs
 
 (* The main loop.  See README for how this works. *)
 
@@ -444,15 +494,13 @@ let not_blacklisted { name = name } = not (List.mem name blacklist)
  *)
 module StringMap = Map.Make (String)
 
-let packages_from_command_line = Array.length Sys.argv >= 2
-
 let rec loop packages running =
   (* If we have no packages, look for more. *)
   let packages =
-    if packages = [] && not packages_from_command_line then
-      List.filter not_blacklisted (get_latest_builds ())
+    if packages_from_command_line <> [] || mass_rebuild then
+      packages
     else
-      packages in
+      List.filter not_blacklisted (get_latest_builds ()) in
 
   (* Check if any builds have finished, and reap them. *)
   let rec reap_builds running = function
@@ -521,12 +569,10 @@ let rec loop packages running =
 
 let () =
   let packages =
-    if packages_from_command_line then (
-      let len = Array.length Sys.argv - 1 in
-      let nvrs = Array.sub Sys.argv 1 len in
-      let nvrs = Array.to_list nvrs in
-      filter_map nvr_to_package nvrs
-    )
+    if packages_from_command_line <> [] then
+      packages_from_command_line
+    else if mass_rebuild then
+      List.filter not_blacklisted (get_mass_rebuild_packages ())
     else [] in
   let running = StringMap.empty in
   loop packages running

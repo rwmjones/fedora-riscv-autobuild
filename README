@@ -48,6 +48,11 @@ useful for testing), provide the exact NVRs of each, eg:
 
   ./riscv-autobuild emacs-25.1-1.fc25 which-2.21-1.fc25
 
+or if you want to do a "mass rebuild" (be warned, this could take
+an enormous amount of time and compute resources):
+
+  ./riscv-autobuild --mass-rebuild
+
 Requirements:
 
  - A fast server with plenty of RAM
