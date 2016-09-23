@@ -301,12 +301,11 @@ gpgcheck=0
      )
 
 let createrepo () =
-  let cmd = sprintf "cd RPMS && createrepo ." dir in
+  let cmd = "make repo" in
   if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
 let rsync () =
-  (* Don't use --delete.  Let the files accumulate at the remote side. *)
-  let cmd = "rsync -av RPMS SRPMS logs fedorapeople.org:/project/risc-v" in
+  let cmd = "make rsync" in
   if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
 (* Finish off a build (it has already been reaped by waitpid). *)

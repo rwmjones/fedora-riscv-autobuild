@@ -33,5 +33,12 @@ veryclean: clean
 distclean: veryclean
 	rm -f vmlinux stage4-disk.img
 
+# The 'make repo' and 'make rsync' rules are also run from
+# the autobuilder.
+
 repo:
 	cd RPMS && createrepo .
+
+rsync:
+#	Don't use --delete.  Let the files accumulate at the remote side.
+	rsync -av RPMS SRPMS logs fedorapeople.org:/project/risc-v
