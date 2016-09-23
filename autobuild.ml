@@ -273,15 +273,9 @@ let start_build pkg =
         *)
        g#copy_in "RPMS" "/var/tmp";
        g#write "/etc/yum.repos.d/local.repo" "\
-[local-riscv64]
-name=Local riscv64 RPMS
-baseurl=file:///var/tmp/RPMS/riscv64
-enabled=1
-gpgcheck=0
-
-[local-noarch]
-name=Local noarch RPMS
-baseurl=file:///var/tmp/RPMS/noarch
+[local]
+name=Local RPMS
+baseurl=file:///var/tmp/RPMS
 enabled=1
 gpgcheck=0
 ";
@@ -307,11 +301,8 @@ gpgcheck=0
      )
 
 let createrepo () =
-  List.iter (
-    fun dir ->
-      let cmd = sprintf "cd %s && createrepo ." dir in
-      if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
-  ) [ "RPMS/riscv64"; "RPMS/noarch" ]
+  let cmd = sprintf "cd RPMS && createrepo ." dir in
+  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
 let rsync () =
   (* Don't use --delete.  Let the files accumulate at the remote side. *)

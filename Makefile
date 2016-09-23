@@ -33,8 +33,5 @@ veryclean: clean
 distclean: veryclean
 	rm -f vmlinux stage4-disk.img
 
-# This is the same as is done by the createrepo () function inside
-# riscv-autobuild.
 repo:
-	cd RPMS/riscv64 && createrepo .
-	cd RPMS/noarch && createrepo .
+	cd RPMS && createrepo .
