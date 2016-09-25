@@ -106,6 +106,10 @@ let get_build_requires srpm =
 let init_script name nvr srpm srpm_in_disk =
   let build_requires = get_build_requires srpm in
 
+  let tm = gmtime (gettimeofday ()) in
+  let month, day, hour, min, year =
+    tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_year+1900 in
+
   let init = sprintf "\
 #!/bin/bash -
 
@@ -127,8 +131,10 @@ mkdir -p /run/lock
 # Initialize dynamic linker cache.
 ldconfig /usr/lib64 /usr/lib /lib64 /lib
 
-# There is no hardware clock, just ensure the date is not miles out.
-date `date -r /usr/bin +%%m%%d%%H%%M%%Y`
+# There is no hardware clock.  As we rebuild this init script for
+# each build, we can insert the approximate current time.
+# The format is MMDDhhmmCCYY
+date -u '%02d%02d%02d%02d%04d'
 
 hostname riscv-autobuild
 echo riscv-autobuild.fedoraproject.org > /etc/hostname
@@ -183,6 +189,7 @@ touch /buildok
 
 # cleanup() is called automatically here.
 "
+    month day hour min year
     nvr releasever
     (string_of_bool (build_requires <> []))
     (String.concat " " (List.map quote build_requires))
