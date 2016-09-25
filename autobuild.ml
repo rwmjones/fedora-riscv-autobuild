@@ -80,6 +80,9 @@ let boot_vm disk bootlog =
     execvp "qemu-system-riscv" cmd
   );
 
+  close devnull_fd;
+  close bootlog_fd;
+
   pid
 
 (* Get the BuildRequires of an SRPM as a list of package names.  Not
