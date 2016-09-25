@@ -6983,7 +6983,7 @@ lxqt-common-0.11.0-1.fc25
 lxqt-config-0.11.0-1.fc25
 lxqt-config-randr-0.1.2-2.20140202git6ada849.fc25
 lxqt-globalkeys-0.11.0-1.fc25
-lxqt-notificationd-0.10.0-4.fc24
+lxqt-notificationd-0.11.0-1.fc25
 lxqt-openssh-askpass-0.10.0-4.fc24
 lxqt-panel-0.10.0-6.fc25
 lxqt-policykit-0.10.0-5.fc25
@@ -7807,7 +7807,7 @@ multiverse-0.7.0-5.fc24
 mumble-1.2.11-3.fc24
 munge-0.5.11-5.fc24
 munge-maven-plugin-1.0-7.fc25
-munin-2.0.25-12.fc25
+munin-2.0.26-1.fc25
 muon-5.5.5-1.fc25
 mup-6.4.1-2.fc24
 mupdf-1.8-2.fc24
@@ -12450,7 +12450,7 @@ php-Monolog-1.21.0-1.fc25
 php-PHP-CSS-Parser-7.0.3-1.fc25
 php-PHPMailer-5.2.16-3.fc25
 php-PHPParser-1.4.1-4.fc25
-php-PsrLog-1.0.0-10.fc24
+php-PsrLog-1.0.1-1.fc25
 php-Raven-0.13.0-2.fc24
 php-Slim-2.6.2-4.fc24
 php-Smarty-3.1.21-4.fc24
@@ -12683,7 +12683,7 @@ php-lukasreschke-id3parser-0.0.1-1.fc25
 php-magickwand-1.0.9.2-9.fc24
 php-manual-en-20140725-3.fc24
 php-markdown-1.6.0-2.fc24
-php-masterminds-html5-2.1.2-2.fc24
+php-masterminds-html5-2.2.2-1.fc25
 php-mcnetic-zipstreamer-1.0-1.fc25
 php-mediawiki-at-ease-1.1.0-2.fc24
 php-mikey179-vfsstream-1.6.4-1.fc25
