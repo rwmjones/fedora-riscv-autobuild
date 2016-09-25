@@ -76,18 +76,18 @@ ElectricFence-2.2.2-43.fc24
 ExchangeIR-0.0.8.2-4.fc24
 FUR-0.4.6-12.fc24
 Falcon-0.9.6.8-10.fc24
-Fedora-Astronomy_KDE-Live-25-20160923.n.0
+Fedora-Astronomy_KDE-Live-25-20160925.n.0
 Fedora-Atomic-25-20160909.n.0
 Fedora-Atomic-Vagrant-25-20160908.n.0
 Fedora-Cinnamon-Live-25-20160915.n.0
-Fedora-Cloud-Base-25-20160923.n.0
-Fedora-Cloud-Base-Vagrant-25-20160923.n.0
-Fedora-Design_suite-Live-25-20160923.n.0
-Fedora-Docker-Base-25-20160923.n.0
+Fedora-Cloud-Base-25-20160925.n.0
+Fedora-Cloud-Base-Vagrant-25-20160925.n.0
+Fedora-Design_suite-Live-25-20160925.n.0
+Fedora-Docker-Base-25-20160925.n.0
 Fedora-Games-Live-25-20160909.n.0
-Fedora-Jam_KDE-Live-25-20160923.n.0
-Fedora-KDE-Live-25-20160923.n.0
-Fedora-LXDE-Live-25-20160923.n.0
+Fedora-Jam_KDE-Live-25-20160925.n.0
+Fedora-KDE-Live-25-20160925.n.0
+Fedora-LXDE-Live-25-20160925.n.0
 Fedora-Live-Astronomy_KDE-Rawhide-20160222.0
 Fedora-Live-Cinnamon-Rawhide-20160222.1
 Fedora-Live-Design_suite-Rawhide-20160222.1
@@ -101,11 +101,11 @@ Fedora-Live-SoaS-Rawhide-20160222.1
 Fedora-Live-Workstation-Rawhide-20160222.1
 Fedora-Live-Xfce-Rawhide-20160222.1
 Fedora-MATE_Compiz-Live-25-20160915.n.0
-Fedora-Robotics-Live-25-20160923.n.0
-Fedora-Scientific_KDE-Live-25-20160923.n.0
+Fedora-Robotics-Live-25-20160925.n.0
+Fedora-Scientific_KDE-Live-25-20160925.n.0
 Fedora-Security-Live-25-20160911.n.0
-Fedora-SoaS-Live-25-20160923.n.0
-Fedora-Workstation-Live-25-20160923.n.0
+Fedora-SoaS-Live-25-20160925.n.0
+Fedora-Workstation-Live-25-20160925.n.0
 Fedora-Xfce-Live-25-20160909.n.0
 Field3D-1.7.2-2.fc25
 FlightCrew-0.9.1-3.fc25
@@ -176,8 +176,8 @@ NetworkManager-pptp-1.2.4-0.1.fc25
 NetworkManager-ssh-1.2.1-0.fc25
 NetworkManager-sstp-1.2.0-1.fc25
 NetworkManager-strongswan-1.3.1-3.20160330libnm.fc25
-NetworkManager-vpnc-1.2.2-1.fc25
-OCE-0.17.1-2.fc25
+NetworkManager-vpnc-1.2.4-0.1.fc25
+OCE-0.17.1-1.fc25
 ORBit-0.5.17-44.fc24
 ORBit2-2.14.19-15.fc24
 OSGi-bundle-ant-task-0.2.0-0.15.svn1242.fc25
@@ -188,7 +188,7 @@ OpenEXR_CTL-1.0.1-24.fc24
 OpenEXR_Viewers-2.2.0-5.fc24
 OpenIPMI-2.0.22-3.fc25
 OpenImageIO-1.6.16-1.fc25
-OpenLP-2.4.2-2.fc25
+OpenLP-2.4.3-1.fc25
 OpenMesh-4.1-2.fc24
 OpenNL-3.2.1-14.fc24
 OpenSceneGraph-3.4.0-4.fc24
@@ -928,7 +928,7 @@ barrage-1.0.4-9.fc24
 barry-0.18.4-14.fc24
 base64coder-20101219-15.fc25
 basesystem-11-2.fc24
-bash-4.3.43-1.fc25
+bash-4.3.43-3.fc25
 bash-argsparse-1.7-3.fc24
 bash-completion-2.4-1.fc25
 bashmount-3.2.0-5.fc24
@@ -942,7 +942,7 @@ bc-1.06.95-16.fc24
 bcache-tools-1.0.8-6.fc25
 bcel-6.0-0.5.20140406svn1592769.fc24
 bchunk-1.2.0-18.fc24
-bcm283x-firmware-20160913-1.c93fb48.fc25
+bcm283x-firmware-20160913-2.c93fb48.fc25
 bcm43xx-fwcutter-006-15.fc24
 bcrypt-1.1-14.fc25
 bdii-5.2.23-5.fc25
@@ -1273,7 +1273,7 @@ ceph-10.2.2-3.fc25
 ceph-ansible-1.0.5-1.fc25
 ceph-deploy-1.5.32-2.fc25
 cereal-1.2.1-2.fc25
-ceres-solver-1.11.0-8.fc25
+ceres-solver-1.11.0-7.fc25
 certbot-0.8.1-3.fc25
 certmaster-0.28-13.fc25
 certmonger-0.78.6-4.fc25
@@ -1359,7 +1359,7 @@ classified-ads-0.11-1.fc25
 classmate-1.3.1-1.fc25
 classycle-1.4-9.fc24
 clatd-1.4-2.fc25
-claws-mail-3.14.0-1.fc25
+claws-mail-3.13.2-3.fc25
 claws-mail-plugins-3.13.1-1.fc24
 clawsker-0.7.13-3.fc24
 clc-0.03-12.fc24
@@ -1559,7 +1559,7 @@ copr-selinux-1.43-1.fc25
 copy-jdk-configs-1.2-1.fc25
 copyq-2.7.1-3.fc25
 coq-8.5pl2-1.fc25
-corebird-1.3.1-2.fc25
+corebird-1.3.2-1.fc25
 coreboot-utils-4.2-2.fc25
 coreutils-8.25-14.fc25
 coriander-2.0.1-11.fc24
@@ -1659,7 +1659,7 @@ cudd-3.0.0-2.fc24
 cuetools-1.4.0-0.15.svn305.fc24
 culmus-fonts-0.130-9.fc25
 cuneiform-1.1.0-20.fc23
-cups-2.2.0-1.fc25
+cups-2.2.0-2.fc25
 cups-bjnp-2.0-5.fc24
 cups-filters-1.10.0-3.fc25
 cups-pdf-2.6.1-11.fc24
@@ -1868,7 +1868,7 @@ diffpdf-2.1.3-8.fc24
 diffstat-1.61-2.fc24
 diffuse-0.4.8-4.fc24
 diffutils-3.3-13.fc24
-digikam-5.1.0-4.fc25
+digikam-5.2.0-1.fc25
 digitemp-3.6.0-14.fc24
 dillo-3.0.4.1-5.fc24
 din-5.2.1-5.fc23
@@ -1908,7 +1908,7 @@ dmapd-0.0.72-4.fc24
 dmenu-4.6-2.fc24
 dmg2img-1.6.5-3.fc24
 dmidecode-3.0-5.fc25
-dmlite-0.8.0-1.fc25
+dmlite-0.7.6-4.fc25
 dmlite-plugins-s3-0.7.0-3.fc24
 dmlite-shell-0.6.2-5.fc24
 dmraid-1.0.0.rc16-30.fc24
@@ -1981,7 +1981,7 @@ dpdk-16.04-1.fc25
 dpkg-1.17.25-8.fc25
 dpm-contrib-admintools-0.2.2-2.fc25
 dpm-dsi-1.9.8-2.fc25
-dpm-xrootd-3.6.1-1.fc25
+dpm-xrootd-3.6.0-2.fc24
 dpsearch-4.54-0.7.20140109snap.fc24
 dput-ng-1.10-5.fc25
 dracut-044-77.fc25
@@ -2042,7 +2042,7 @@ drupal7-domain_views-1.5-6.fc24
 drupal7-drush_language-1.5-3.fc24
 drupal7-ds-2.14-1.fc25
 drupal7-email-1.3-4.fc24
-drupal7-entity-1.7-1.fc25
+drupal7-entity-1.8-1.fc25
 drupal7-entity_translation-1.0-0.9.beta5.fc25
 drupal7-eva-1.4-0.1.rc1.fc25
 drupal7-features-2.10-1.fc25
@@ -2357,7 +2357,7 @@ emacspeak-40.0-6.fc25
 email2trac-2.9.0-2.fc24
 ember-0.7.2-15.fc25
 ember-media-0.7.2.1-4.fc24
-embree-2.10.0-8.fc25
+embree-2.11.0-1.fc25
 emelfm2-0.9.1-4.fc23
 emerald-0.8.12.4-1.fc25
 emerald-themes-0.8.12.1-1.fc25
@@ -2592,7 +2592,7 @@ farstream02-0.2.7-3.fc24
 fasd-1.0.1-2.fc25
 fastback-0.4-11.fc24
 fastd-18-1.fc25
-fasterxml-oss-parent-24-3.fc24
+fasterxml-oss-parent-26-1.fc25
 fastlz-0.1.0-0.3.20070619svnrev12.fc24
 fastutil-7.0.7-2.fc24
 fastx_toolkit-0.0.14-15.fc24
@@ -3027,7 +3027,7 @@ gaupol-0.25-7.fc25
 gausssum-3.0.1.1-2.fc25
 gavl-1.4.0-8.fc24
 gawk-4.1.3-9.fc25
-gazebo-7.3.1-2.fc25
+gazebo-7.3.1-1.fc25
 gball-2.0-2.fc24
 gbdfed-1.6-5.fc24
 gbrainy-2.3.0-1.fc25
@@ -3137,7 +3137,7 @@ getdata-0.9.4-1.fc25
 getdns-0.9.0-2.fc25
 getdp-2.9.2-1.fc25
 geteltorito-0.6-3.fc25
-getmail-4.49.0-2.fc25
+getmail-4.51.0-1.fc25
 gettext-0.19.8.1-2.fc25
 gettext-commons-0.9.6-14.fc24
 gf2x-1.1-8.fc24
@@ -3712,7 +3712,7 @@ gnome-clocks-3.21.2-1.fc25
 gnome-code-assistance-3.16.1-1.fc25
 gnome-color-manager-3.21.92-1.fc25
 gnome-colors-icon-theme-5.5.1-9.fc24
-gnome-commander-1.4.8-1.fc25
+gnome-commander-1.4.9-1.fc25
 gnome-common-3.18.0-2.fc24
 gnome-contacts-3.20.0-3.fc25
 gnome-desktop-2.32.0-17.fc24
@@ -3873,7 +3873,7 @@ goffice-0.10.32-1.fc25
 goffice08-0.8.17-15.fc25
 gogoc-1.2-49.fc25
 gogui-1.4.9-6.fc24
-golang-1.7.1-2.fc25
+golang-1.7.1-1.fc25
 golang-bitbucket-kardianos-osext-0-0.12.hg364fb577de68.fc25
 golang-bitbucket-ww-goautoneg-0-0.8.git75cd24fc2f2c.fc25
 golang-github-10gen-openssl-0-0.9.git4c6dbaf.fc25
@@ -4998,19 +4998,22 @@ jackcess-encrypt-2.1.1-2.fc25
 jackctlmmc-4-12.fc24
 jacknativeclient-0-0.11.20120218git.fc24
 jackson-1.9.11-9.fc25
-jackson-annotations-2.6.7-1.fc25
-jackson-core-2.6.7-1.fc25
-jackson-databind-2.6.7-1.fc25
-jackson-dataformat-cbor-2.6.7-1.fc25
-jackson-dataformat-csv-2.6.7-1.fc25
-jackson-dataformat-smile-2.6.7-1.fc25
-jackson-dataformat-xml-2.6.7-1.fc25
-jackson-dataformat-yaml-2.6.7-1.fc25
-jackson-datatype-joda-2.6.7-1.fc25
-jackson-jaxrs-providers-2.6.7-1.fc25
-jackson-module-jaxb-annotations-2.6.7-1.fc25
-jackson-module-jsonSchema-2.6.7-1.fc25
-jackson-parent-2.6.2-2.fc24
+jackson-annotations-2.7.6-1.fc25
+jackson-core-2.7.6-1.fc25
+jackson-databind-2.7.6-1.fc25
+jackson-dataformat-cbor-2.7.6-1.fc25
+jackson-dataformat-csv-2.7.6-1.fc25
+jackson-dataformat-smile-2.7.6-1.fc25
+jackson-dataformat-xml-2.7.6-1.fc25
+jackson-dataformat-yaml-2.7.6-1.fc25
+jackson-datatype-jdk8-2.7.6-2.fc25
+jackson-datatype-joda-2.7.6-1.fc25
+jackson-datatype-jsr310-2.7.6-2.fc25
+jackson-datatypes-collections-2.7.6-1.fc25
+jackson-jaxrs-providers-2.7.6-1.fc25
+jackson-module-jaxb-annotations-2.7.6-1.fc25
+jackson-module-jsonSchema-2.7.6-1.fc25
+jackson-parent-2.7-1.1.fc25
 jacoco-0.7.7-2.fc25
 jacop-4.2-4.fc24
 jacorb-2.3.2-1.jbossorg.5.fc25
@@ -5580,7 +5583,7 @@ kf5-akonadi-contacts-16.08.1-1.fc25
 kf5-akonadi-mime-16.08.1-1.fc25
 kf5-akonadi-notes-16.08.1-1.fc25
 kf5-akonadi-search-16.08.1-1.fc25
-kf5-akonadi-server-16.08.1-1.fc25
+kf5-akonadi-server-16.08.1-2.fc25
 kf5-attica-5.26.0-1.fc25
 kf5-baloo-5.26.0-1.fc25
 kf5-bluez-qt-5.26.0-1.fc25
@@ -5632,7 +5635,6 @@ kf5-kimageformats-5.26.0-1.fc25
 kf5-kimap-16.08.1-1.fc25
 kf5-kinit-5.26.0-1.fc25
 kf5-kio-5.26.0-2.fc25
-kf5-kirigami-1.0.2-2.fc25
 kf5-kitemmodels-5.26.0-1.fc25
 kf5-kitemviews-5.26.0-1.fc25
 kf5-kjobwidgets-5.26.0-1.fc25
@@ -6349,7 +6351,7 @@ liblqr-1-0.4.2-6.fc24
 liblrdf-0.5.0-10.fc24
 liblsl-1.11.0-3.fc25
 libltc-1.2.0-2.fc24
-liblxqt-0.10.0-9.fc24
+liblxqt-0.11.0-1.fc25
 liblxqt-mount-0.9.0-5.fc24
 liblzf-3.6-11.fc24
 libmash-0.2.0-20.fc24
@@ -6517,7 +6519,7 @@ libqb-1.0-1.fc25
 libqinfinity-0.6-0.3.20140920.fc23
 libqmi-1.16.0-1.fc25
 libqtelegram-ae-10.0.0-2.fc25
-libqtxdg-1.3.0-3.fc24
+libqtxdg-2.0.0-1.fc25
 libqtxdg-qt4-1.2.0-11.fc24
 libquvi-0.9.4-8.fc24
 libquvi-scripts-0.9.20131130-6.fc24
@@ -6611,7 +6613,7 @@ libstroke-0.5.1-33.fc24
 libsurl-0.7.2-8.fc24
 libsvm-3.21-1.fc25
 libsynce-0.15.1-10.fc24
-libsysstat-0.3.1-4.fc25
+libsysstat-0.3.2-1.fc25
 libtaginfo-0.2.0-5.fc23
 libtalloc-2.1.8-1.fc25
 libtar-1.2.20-8.fc24
@@ -6932,6 +6934,7 @@ lucidlife-0.9.2-18.fc24
 luckybackup-0.4.8-8.fc24
 luksmeta-2-1.fc25
 lulzbot-marlin-firmware-20.03-2.fc25
+lumina-desktop-1.0.0-4.p2.Lbc08e90.fc25
 luminance-hdr-2.4.0-10.fc24
 lunatic-python-1.0.1-0.16.20090917bzr.fc25
 lure-1.1-13.fc24
@@ -6974,12 +6977,12 @@ lxmenu-data-0.1.5-1.fc25
 lxmusic-0.4.7-1.fc25
 lxpanel-0.8.2-2.fc25
 lxpolkit-0.1.0-12.fc24
-lxqt-about-0.10.0-5.fc24
+lxqt-about-0.11.0-1.fc25
 lxqt-admin-0.10.0-3.20160729git2f95601.fc25
-lxqt-common-0.10.0-12.fc25
-lxqt-config-0.10.0-6.fc25
+lxqt-common-0.11.0-1.fc25
+lxqt-config-0.11.0-1.fc25
 lxqt-config-randr-0.1.2-2.20140202git6ada849.fc25
-lxqt-globalkeys-0.10.0-5.fc24
+lxqt-globalkeys-0.11.0-1.fc25
 lxqt-notificationd-0.10.0-4.fc24
 lxqt-openssh-askpass-0.10.0-4.fc24
 lxqt-panel-0.10.0-6.fc25
@@ -7026,7 +7029,7 @@ mach-1.0.4-2.fc24
 machineball-1.0-24.fc24
 mactel-boot-0.9-13.fc24
 madan-fonts-2.000-17.fc24
-magic-8.1.106-1.fc25
+magic-8.1.107-1.fc25
 magicmaze-1.0.2-17.fc24
 magicor-1.1-17.fc25
 mahout-collection-codegen-plugin-1.0-4.fc24
@@ -7118,7 +7121,7 @@ mate-utils-1.15.1-1.fc25
 mathex-0.3b-7.fc24
 mathgl-2.3.4-3.fc25
 mathic-1.0-4.20160320.git558fff0.fc25
-mathicgb-1.0-6.20160202.gitbb268df.fc25
+mathicgb-1.0-5.20160202.gitbb268df.fc25
 mathjax-2.4.0-3.fc24
 mathomatic-16.0.5-10.fc24
 matio-1.5.7-2.fc25
@@ -7257,7 +7260,7 @@ mediawiki-intersection-37906-6.fc24
 mediawiki-semantic-1.8.0.4-6.fc24
 mediawiki-validator-0.5.1-5.fc24
 mediawiki-wikicalendar-1.16-9.fc24
-mediawriter-3.97.1-0.fc25
+mediawriter-0-1.1git728a879.fc25
 medusa-2.2-1.fc25
 megaglest-3.12.0-1.fc25
 megaglest-data-3.12.0-3.fc25
@@ -7292,7 +7295,7 @@ metacity-3.12.0-4.fc24
 metadata-extractor-2.3.1-13.fc21
 metadata-extractor2-2.8.1-4.fc25
 metainf-services-1.7-1.fc25
-metamath-0.134-1.fc25
+metamath-0.135-1.fc25
 metamorphose2-0.8.2-8.fc24
 metapixel-1.0.2-3.fc24
 meterbridge-0.9.2-14.fc24
@@ -8040,7 +8043,7 @@ nini-1.1.0-10.fc25
 ninja-build-1.7.1-1.fc25
 ninja-ide-2.3-7.fc25
 ninvaders-0.1.1-13.fc24
-nip2-8.3.0-1.fc25
+nip2-8.4.0-1.fc25
 nipy-data-0.2-2.fc24
 nitrogen-1.5.2-17.fc24
 nitroshare-0.3.3-1.fc25
@@ -9146,7 +9149,7 @@ nullmodem-0.0.6-14.fc24
 numactl-2.0.11-2.fc24
 numad-0.5-21.20150602git.fc24
 numatop-1.0.4-1.fc25
-numix-gtk-theme-2.6.0-1.fc25
+numix-gtk-theme-2.6.4-1.fc25
 numix-icon-theme-0.1.0-12.git101307f.fc25
 numix-icon-theme-circle-0.1.0-10.git475d649.fc25
 numlockx-1.2-9.fc24
@@ -9433,7 +9436,7 @@ openpgm-5.2.122-6.fc24
 openpgpkey-milter-0.5-2.fc24
 openprops-0.7.1-1.fc24
 openpts-0.2.6-13.fc24
-openqa-4.4-20.20160922git23e4f45.fc25
+openqa-4.4-19.20160919git5c812db.fc25
 openrdate-1.2-8.fc24
 openrdf-sesame-2.8.10-1.fc25
 opensaml-2.4.3-11.fc23
@@ -9497,7 +9500,7 @@ orthanc-1.1.0-1.fc25
 orthorobot-1.1-3.fc25
 ortp-0.23.0-2.fc23
 os-apply-config-0.1.32-5.fc25
-os-autoinst-4.4-5.20160915gitba7ea22.fc25
+os-autoinst-4.3-26.20160902git1962d68.fc25
 os-collect-config-0.1.36-6.fc25
 os-maven-plugin-1.2.3-6.fc25
 os-net-config-0.1.5-5.fc25
@@ -9647,7 +9650,6 @@ pcapdiff-0.1-16.fc24
 pcapfix-1.1.0-3.fc24
 pcapy-0.10.8-9.fc25
 pcaro-hermit-fonts-1.21-6.fc24
-pcaudiolib-1.0-3.fc25
 pcb-0.20140316-10.fc25
 pcc-1.1.0-1.1.20160115cvs.fc24.1
 pcfi-2010.08.09-10.20111103gitbd245c9.fc24
@@ -12416,7 +12418,6 @@ pg_view-1.3.0-2.fc24
 pgadmin3-1.22.1-3.fc25
 pgbouncer-1.7.2-1.fc25
 pgcenter-0.2.0-3.fc24
-pgmodeler-0.8.2-4.fc25
 pgp-tools-2.4-1.fc25
 pgpdump-0.31-1.fc25
 pgsphere-1.1.1-13.fc24
@@ -12430,7 +12431,7 @@ phetsarath-fonts-1.01-6.fc24
 phodav-2.0-6.fc24
 phonon-4.9.0-3.fc25
 phonon-backend-gstreamer-4.9.0-1.fc25
-phoronix-test-suite-6.4.0-1.fc25
+phoronix-test-suite-6.6.0-1.fc25
 photocollage-1.4.2-2.fc25
 photoml-0.28-9.fc24
 photoprint-0.4.2-0.18.pre2.fc25
@@ -12466,7 +12467,7 @@ php-aura-di-2.2.4-1.fc25
 php-aura-router-2.3.0-1.fc25
 php-aws-php-sns-message-validator-1.1.0-1.fc25
 php-aws-sdk-2.8.31-1.fc25
-php-aws-sdk3-3.19.6-1.fc25
+php-aws-sdk3-3.19.10-1.fc25
 php-bantu-ini-get-wrapper-1.0.1-3.fc24
 php-bartlett-PHP-CompatInfo-5.0.1-1.fc25
 php-bartlett-PHP-Reflect-4.0.1-1.fc25
@@ -13344,12 +13345,12 @@ publican-jboss-2.6-8.fc24
 publicsuffix-list-20160805-1.fc25
 puddletag-1.1.1-2.fc25
 pugixml-1.7-2.fc24
-pulp-2.10.0-1.fc25
-pulp-docker-2.1.0-2.fc25
-pulp-ostree-1.1.3-3.fc25
-pulp-puppet-2.10.0-3.fc25
-pulp-python-1.1.3-1.fc25
-pulp-rpm-2.10.0-4.fc25
+pulp-2.9.0-2.fc25
+pulp-docker-2.0.2-2.fc25
+pulp-ostree-1.1.2-2.fc25
+pulp-puppet-2.9.0-2.fc25
+pulp-python-1.1.2-2.fc25
+pulp-rpm-2.9.0-2.fc25
 pulseaudio-9.0-1.fc25
 pulseaudio-equalizer-2.7-17.fc24
 pulsecaster-0.1.10-5.fc25
@@ -13360,7 +13361,7 @@ puppet-firewalld-0.2.2-3.fc24
 puppet-gluster-0.0.3-4.fc24
 puppetlabs-stdlib-4.5.1-4.20150121git7a91f20.fc24
 pure-ftpd-1.0.42-4.fc24
-purple-hangouts-0-36.20160821hgfbd4536.fc25
+purple-hangouts-0-37.20160924hg6b1ec4a.fc25
 purple-libsteam-1.6.1-11.20160618gitcd5a294.fc25
 purple-line-20151114git26f6511-2.fc24
 purple-plugin_pack-2.7.0-3.fc24
@@ -13473,7 +13474,7 @@ pyscript-0.6.1-18.fc25
 pysdm-0.4.1-11.fc24
 pysendfile-2.0.1-3.fc25
 pyserial-3.1.1-1.fc25
-pyshp-1.2.5-2.fc25
+pyshp-1.2.10-1.fc25
 pyside-tools-0.2.13-11.fc25
 pysnmp-4.3.2-2.fc25
 pystache-0.5.3-8.fc25
@@ -13504,7 +13505,7 @@ python-Levenshtein-0.10.1-23.fc25
 python-Lightbox-2.1-14.fc25
 python-MDAnalysis-0.14.0-2.fc25
 python-MultipartPostHandler2-0.1.5-5.fc25
-python-OWSLib-0.12.0-1.fc25
+python-OWSLib-0.13.0-1.fc25
 python-PSI-0.3-0.13.b2.fc25
 python-PyGithub-1.28-1.fc25
 python-PyLink-0.3.2-3.fc25
@@ -13606,7 +13607,7 @@ python-astroML-0.3-9.fc25
 python-astroML-addons-0.2.2-5.fc25
 python-astroid-1.4.5-3.fc25
 python-astropy-1.2.1-2.fc25
-python-astropy-helpers-1.1.2-2.fc25
+python-astropy-helpers-1.2-1.fc25
 python-astroquery-0.3.2-2.fc25
 python-atfork-0.1.2-10.fc25
 python-atomicwrites-1.0.0-2.fc25
@@ -13674,7 +13675,7 @@ python-cagraph-1.2-20.fc25
 python-cairocffi-0.7.2-6.fc25
 python-cairosvg-1.0.20-2.fc25
 python-caja-1.15.0-1.fc25
-python-carbon-0.9.15-3.fc25
+python-carbon-0.9.15-6.fc25
 python-carddav-0.7.0-5.fc25
 python-carrot-0.10.7-11.fc25
 python-cassandra-driver-3.6.0-1.fc25
@@ -14240,7 +14241,7 @@ python-mandrill-1.0.51-6.fc25
 python-manilaclient-1.8.1-3.fc25
 python-manuel-1.8.0-6.fc25
 python-mapnik-0.1-9.20160909git541fd96.fc25
-python-markdown-2.6.6-2.fc25
+python-markdown-2.6.7-1.fc25
 python-markdown2-2.3.0-5.fc24
 python-markups-2.0.0-2.fc25
 python-markupsafe-0.23-10.fc25
@@ -14625,7 +14626,7 @@ python-re2-1.0.4-4.fc25
 python-recaptcha-client-1.0.6-8.fc25
 python-recommonmark-0.4.0-7.git7ca5247.fc25
 python-redis-2.10.5-2.fc25
-python-regex-2016.07.21-1.fc25
+python-regex-2016.09.22-1.fc25
 python-relatorio-0.6.3-3.fc25
 python-releases-1.2.0-3.fc25
 python-remoteobjects-1.2.1-3.fc25
@@ -14721,7 +14722,7 @@ python-seqdiag-0.9.5-6.fc25
 python-service-identity-14.0.0-4.fc24
 python-setproctitle-1.1.9-4.fc25
 python-setuptools-25.1.1-1.fc25
-python-setuptools_git-0.4.2-8.fc25
+python-setuptools_git-1.1-2.fc25
 python-setuptools_hg-0.2.1-10.fc25
 python-setuptools_scm-1.10.1-4.fc25
 python-sexy-0.1.9-23.fc25
@@ -14819,7 +14820,7 @@ python-swiftclient-3.0.0-4.fc25
 python-sync2jira-0.2-5.fc25
 python-systemd-231-6.fc25
 python-sysv_ipc-0.7.0-2.fc25
-python-tables-3.3.0-1.fc25
+python-tables-3.2.2-6.fc25
 python-tablib-0.10.0-4.fc25
 python-taboot-0.4.0-9.fc25
 python-tabulate-0.7.5-4.fc25
@@ -14985,7 +14986,7 @@ python-wheel-0.26.0-2.fc24
 python-which-1.1.0-16.fc25
 python-whichcraft-0.4.0-2.fc25
 python-whisper-0.9.15-3.fc25
-python-whitenoise-2.0.6-4.fc25
+python-whitenoise-3.1-1.fc25
 python-whoosh-2.7.4-2.fc25
 python-wifi-0.5.0-13.fc25
 python-wikitcms-2.1.6-2.fc25
@@ -15527,6 +15528,7 @@ rst2pdf-0.93-8.fc25
 rstp-04012009git-17.fc25
 rsvndump-0.6-8.fc24
 rsync-3.1.2-2.fc24
+rsyntaxtextarea-2.5.8-2.fc25
 rsyslog-8.12.0-3.fc24
 rt-4.4.1-1.fc25
 rtaudio-4.0.11-10.fc24
@@ -16358,7 +16360,7 @@ seed-3.8.1-7.fc24
 seeker-3.0-13.fc24
 seekwatcher-0.12-13.fc24
 seivot-1.18-5.fc24
-selinux-policy-3.13.1-215.fc25
+selinux-policy-3.13.1-212.fc25
 sems-1.6.0-4.fc25
 semweb4j-5.0.1-3.fc25
 sen-0.4.0-1.fc25
@@ -16693,7 +16695,7 @@ springframework-data-commons-1.8.4-7.fc25
 springframework-data-jpa-1.6.6-3.fc25
 springframework-data-mongodb-1.5.2-5.fc25
 springframework-data-redis-1.3.5-3.fc24
-springframework-hateoas-0.16.0-4.fc25
+springframework-hateoas-0.16.0-5.fc25
 springframework-integration-3.0.7-6.fc25
 springframework-plugin-1.1.0-6.fc25
 springframework-retry-1.1.1-4.fc24
@@ -16902,7 +16904,7 @@ sugar-xoirc-12-3.fc24
 sugar-xomail-0-0.13.20090128.fc24
 sugar-yupana-17-3.fc24
 suil-0.8.2-4.fc24
-suitesparse-4.4.6-6.fc25
+suitesparse-4.4.6-5.fc24
 summain-0.20-2.fc25
 sumwars-0.5.8-8.fc24
 sundials-2.6.2-19.fc25
@@ -17067,7 +17069,7 @@ taskd-1.1.0-3.fc24
 taskjuggler-2.4.3-22.fc23
 taxipilot-0.9.2-21.fc24
 tayga-0.9.2-4.fc24
-tbb-2017-1.20160722.fc25
+tbb-4.4-8.20160526.fc25
 tboot-1.8.2-3.fc23
 tcalc-2.1-1.fc25
 tcd-utils-20120115-8.fc24
@@ -17532,7 +17534,7 @@ uid_wrapper-1.2.1-1.fc25
 uim-1.8.6-9.fc24
 uima-addons-2.3.1-7.fc24
 uima-parent-pom-10-2.fc24
-uimaj-2.8.1-2.fc24
+uimaj-2.8.1-3.fc25
 uisp-20050207-19.fc24
 uispec4j-2.5-0.2.20150412gitfdc0b42.fc25
 ukij-tuz-fonts-3.10-9.fc24
@@ -17549,7 +17551,7 @@ un-extra-fonts-1.0.2-0.22.080608.fc24
 unar-1.10.1-1.fc25
 unbescape-1.1.1-3.fc25
 unbound-1.5.9-4.fc25
-unboundid-ldapsdk-3.2.0-1.fc25
+unboundid-ldapsdk-3.1.1-1.fc25
 unclutter-8-12.fc24
 uncommons-maths-1.2.3-6.fc25
 uncrustify-0.62-1.fc25
@@ -17738,7 +17740,7 @@ vimpal-1.5.0-5.fc24
 vinagre-3.21.92-1.fc25
 vinci-1.0.5-11.fc24
 vino-3.21.92-1.fc25
-vips-8.3.3-1.fc25
+vips-8.4.1-1.fc25
 virglrenderer-0.5.0-1.20160411git61846f92f.fc25
 virt-dmesg-0.3.0-21.fc24
 virt-manager-1.4.0-3.fc25
@@ -17797,7 +17799,7 @@ w3c-markup-validator-1.3-11.fc24
 w3m-0.5.3-25.fc25
 w_scan-20141122-2.fc24
 wadofstuff-django-serializers-1.1.0-9.fc25
-waf-1.9.3-1.fc25
+waf-1.9.4-1.fc25
 waffle-1.5.2-3.fc25
 wallpapoz-0.6.2-7.fc24.3
 wallpoet-fonts-1.000-0.3.20140916hg.fc24
@@ -17832,10 +17834,10 @@ webjars-locator-core-0.31-2.fc25
 webkit-sharp-0.3-17.fc24
 webkitgtk-2.4.11-3.fc25
 webkitgtk3-2.4.11-3.fc25
-webkitgtk4-2.13.92-1.fc25
+webkitgtk4-2.14.0-1.fc25
 webrtc-audio-processing-0.3-1.fc25
 websec-1.9.0-20.fc24
-websocketpp-0.4.0-9.fc24
+websocketpp-0.7.0-1.fc25
 websvn-2.3.3-13.fc25
 weechat-1.5-2.fc25
 weka-3.6.14-2.fc25
@@ -17935,7 +17937,7 @@ workrave-1.10.15-1.fc25
 worminator-3.0R2.1-23.fc24
 worminator-data-3.0R2.1-14.fc24
 wpa_supplicant-2.5-5.fc24
-wpan-tools-0.6-1.fc25
+wpan-tools-0.7-1.fc25
 wput-0.6.1-17.fc24
 wqy-bitmap-fonts-1.0.0-0.10.rc1.fc24
 wqy-microhei-fonts-0.2.0-0.17.beta.fc24
@@ -17962,7 +17964,7 @@ wv-1.2.9-13.fc24
 wvdial-1.61-14.fc24
 wvs-data-0.0.20020219-14.fc24
 wxGTK-2.8.12-25.fc25
-wxGTK3-3.0.2-19.fc25
+wxGTK3-3.0.2-24.fc25
 wxGlade-0.7.2-2.fc25
 wxMaxima-15.08.2-2.fc24
 wxPython-3.0.2.0-11.fc25
@@ -18205,6 +18207,7 @@ xorg-sgml-doctools-1.11-3.fc24
 xorg-x11-apps-7.7-15.fc24
 xorg-x11-docs-1.7.1-3.fc24
 xorg-x11-drivers-7.7-17.fc25
+xorg-x11-drv-amdgpu-1.1.2-2.fc25
 xorg-x11-drv-armsoc-1.4.0-2.20151221.fc24
 xorg-x11-drv-ati-7.7.0-1.20160518git1181b9c.fc25
 xorg-x11-drv-dummy-0.3.6-25.fc24
@@ -18389,7 +18392,7 @@ zaz-1.0.0-16.fc24
 zbackup-1.4.4-2.fc24
 zbar-0.10-27.fc25
 zd1211-firmware-1.4-12.fc24
-zeal-0.2.1-1.fc24
+zeal-0.3.0-1.fc25
 zeitgeist-0.9.16-2.fc24
 zenity-3.20.0-1.fc25
 zenon-0.8.2-2.fc25
