@@ -168,7 +168,35 @@ $tdnf -y update --best
 
 set -e
 
-# Install the build requirements.
+# Install the basic build environment.  This is no longer included
+# in stage4-disk.img, so we have to install these packages ourselves.
+# See also buildsys-build in comps.xml
+$tdnf -y install \
+    bash \
+    bzip2 \
+    coreutils \
+    cpio \
+    diffutils \
+    fedora-release \
+    findutils \
+    gawk \
+    hack-gcc \
+    grep \
+    gzip \
+    info \
+    make \
+    patch \
+    redhat-rpm-config \
+    rpm-build \
+    sed \
+    tar \
+    unzip \
+    util-linux \
+    which \
+    xz
+# missing from above list: shadow-utils
+
+# Install the package BuildRequires.
 #
 # tdnf doesn't do build requirements.  'tdnf install' *only* handles
 # pure package names, not even virtual provides like 'perl(Foo)'.
