@@ -181,6 +181,7 @@ $tdnf -y install \
     findutils \
     gawk \
     hack-gcc \
+    glibc-headers \
     grep \
     gzip \
     info \
@@ -195,6 +196,10 @@ $tdnf -y install \
     which \
     xz
 # missing from above list: shadow-utils
+
+# XXX Required after installing hack-gcc.  Not necessary once
+# we use proper gcc package.
+source /etc/profile.d/gcc.sh
 
 # Install the package BuildRequires.
 #
