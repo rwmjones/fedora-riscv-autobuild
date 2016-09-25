@@ -177,6 +177,7 @@ $tdnf -y install \
     coreutils \
     cpio \
     diffutils \
+    elfutils \
     fedora-release \
     findutils \
     gawk \
