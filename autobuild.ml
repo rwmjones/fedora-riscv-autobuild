@@ -103,7 +103,7 @@ let get_build_requires srpm =
   | WEXITED 0 ->
      let ret = List.rev !ret in
      (* Just want the package names ... *)
-     let ret = filter_map nvr_to_package ret in
+     let ret = filter_map (nvr_to_package Manual (* not used *)) ret in
      let ret = List.map (fun { name = name } -> name) ret in
      ret
   | WEXITED _ | WSIGNALED _ | WSTOPPED _ ->
@@ -340,8 +340,12 @@ enabled=1
 gpgcheck=0
 ";
 
+       let build =
+         { pid = 0; bootlog = ""; (* see below *)
+           pkg = pkg; srpm = srpm; logdir = logdir; disk = disk } in
+
        (* Create an init script and insert it into the disk image. *)
-       let init = init_script name nvr srpm srpm_in_disk in
+       let init = init_script build srpm_in_disk in
        g#write "/init" init;
        g#chmod 0o755 "/init";
 
@@ -355,9 +359,7 @@ gpgcheck=0
        let bootlog = sprintf "%s/boot.log" logdir in
        let pid = boot_vm disk bootlog in
 
-       Some { pid = pid; pkg = pkg; srpm = srpm;
-              logdir = logdir; bootlog = bootlog;
-              disk = disk }
+       Some { build with pid = pid; bootlog = bootlog }
      )
 
 let createrepo () =
@@ -508,7 +510,7 @@ let get_latest_builds () =
         StringSet.iter (
           fun nvr ->
             if not (StringSet.mem nvr olds) then (
-              let pkg = nvr_to_package nvr in
+              let pkg = (nvr_to_package Koji) nvr in
               match pkg with
               | None -> ()
               | Some pkg -> ret := pkg :: !ret
@@ -539,7 +541,7 @@ let get_mass_rebuild_packages () =
   in
 
   let nvrs = read_koji_builds "koji-builds" in
-  let packages = filter_map nvr_to_package nvrs in
+  let packages = filter_map (nvr_to_package Koji) nvrs in
   packages
 
 (* Remove packages which are on the blacklist. *)
@@ -572,7 +574,7 @@ let () = Arg.parse argspec anon_fun usage_msg
 let mass_rebuild = !mass_rebuild
 let packages_from_command_line =
   let nvrs = List.rev !packages_from_command_line in
-  filter_map nvr_to_package nvrs
+  filter_map (nvr_to_package Manual) nvrs
 
 (* The main loop.  See README for how this works. *)
 
