@@ -23,7 +23,10 @@ open Printf
 open Utils
 open Config
 
+type source = Koji | Manual
+
 type package = {
+  source : source;              (* Source of the package. *)
   nvr : string;                 (* Full RPM NVR as a single string. *)
   name : string;                (* Just the source package name. *)
   version : string;             (* Version. *)
@@ -49,10 +52,11 @@ let (//) = Filename.concat
 
 let nvr_to_package =
   let rex = Pcre.regexp "^(.*?)-(\\d.*)-([^-]+)$" in
-  fun nvr ->
+  fun source nvr ->
     try
       let subs = Pcre.exec ~rex nvr in
-      Some { nvr = nvr;
+      Some { source = source;
+             nvr = nvr;
              name = Pcre.get_substring subs 1;
              version = Pcre.get_substring subs 2;
              release = Pcre.get_substring subs 3 }
@@ -106,12 +110,17 @@ let get_build_requires srpm =
      failwith (sprintf "%s: failed" cmd)
 
 (* Write the /init script that controls the build inside the VM. *)
-let init_script name nvr srpm srpm_in_disk =
-  let build_requires = get_build_requires srpm in
+let init_script build srpm_in_disk =
+  let build_requires = get_build_requires build.srpm in
 
   let tm = gmtime (gettimeofday ()) in
   let month, day, hour, min, year =
     tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_year+1900 in
+
+  let hostname =
+    match build.pkg.source with
+    | Koji -> "riscv-autobuild-koji"
+    | Manual -> "riscv-autobuild-manual" in
 
   let init = sprintf "\
 #!/bin/bash -
@@ -139,7 +148,7 @@ ldconfig /usr/lib64 /usr/lib /lib64 /lib
 # The format is MMDDhhmmCCYY
 date -u '%02d%02d%02d%02d%04d'
 
-hostname riscv-autobuild
+hostname %s
 echo riscv-autobuild.fedoraproject.org > /etc/hostname
 
 echo
@@ -205,6 +214,12 @@ $tdnf -y install \
 # we use proper gcc package.
 source /etc/profile.d/gcc.sh
 
+# Hack to make iconv command work.
+# Remove this when we have fixed glibc.
+pushd /usr/lib
+ln -s ../lib64/gconv
+popd
+
 # Install the package BuildRequires.
 #
 # tdnf doesn't do build requirements.  'tdnf install' *only* handles
@@ -227,7 +242,8 @@ touch /buildok
 # cleanup() is called automatically here.
 "
     month day hour min year
-    nvr releasever
+    hostname
+    build.pkg.nvr releasever
     (string_of_bool (build_requires <> []))
     (String.concat " " (List.map quote build_requires))
     srpm_in_disk in
