@@ -213,6 +213,9 @@ $tdnf -y install \
 # XXX Required after installing hack-gcc.  Not necessary once
 # we use proper gcc package.
 source /etc/profile.d/gcc.sh
+pushd /usr/bin
+ln -s gcc cc
+popd
 
 # Hack to make iconv command work.
 # Remove this when we have fixed glibc.
