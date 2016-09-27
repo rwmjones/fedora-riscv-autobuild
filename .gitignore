@@ -3,7 +3,7 @@
 *.cmo
 
 /riscv-autobuild
-/stage4-disk.img
+/stage4-disk.img*
 /vmlinux
 
 /logs/*
