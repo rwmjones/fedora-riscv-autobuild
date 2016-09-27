@@ -170,20 +170,19 @@ cleanup ()
 trap cleanup INT QUIT TERM EXIT ERR
 
 # Display list of repositories:
-tdnf=\"tdnf --releasever %d\"
-$tdnf repolist
-$tdnf clean all
-$tdnf makecache
+tdnf repolist
+tdnf clean all
+tdnf makecache
 
 # Pick up any updated packages:
-$tdnf -y update --best
+tdnf -y update --best
 
 set -e
 
 # Install the basic build environment.  This is no longer included
 # in stage4-disk.img, so we have to install these packages ourselves.
 # See also buildsys-build in comps.xml
-$tdnf -y install \
+tdnf -y install \
     bash \
     bzip2 \
     coreutils \
@@ -242,7 +241,7 @@ done
 #
 # XXX When we have compiled full dnf, replace this with
 # 'dnf builddep' command.
-if %s; then $tdnf -y install --best %s >& /root.log; fi
+if %s; then tdnf -y install --best %s >& /root.log; fi
 
 # Build the package.
 rpmbuild --rebuild %s >& /build.log
@@ -255,7 +254,7 @@ touch /buildok
 "
     month day hour min year
     hostname
-    build.pkg.nvr releasever
+    build.pkg.nvr
     (string_of_bool (build_requires <> []))
     (String.concat " " (List.map quote build_requires))
     srpm_in_disk in
