@@ -51,16 +51,17 @@ let quote = Filename.quote
 let (//) = Filename.concat
 
 let nvr_to_package =
-  let rex = Pcre.regexp "^(.*?)-(\\d.*)-([^-]+)$" in
+  let rex = Pcre.regexp "^(.*?)-([^-]+)-([^-]+)$" in
   fun source nvr ->
     try
       let subs = Pcre.exec ~rex nvr in
-      Some { source = source;
-             nvr = nvr;
-             name = Pcre.get_substring subs 1;
-             version = Pcre.get_substring subs 2;
-             release = Pcre.get_substring subs 3 }
-    with Not_found -> None
+      { source = source;
+        nvr = nvr;
+        name = Pcre.get_substring subs 1;
+        version = Pcre.get_substring subs 2;
+        release = Pcre.get_substring subs 3 }
+    with Not_found ->
+         failwith (sprintf "bad NVR: %s" nvr)
 
 (* Boot a disk image in qemu, running it as a background process.
  * Returns the process ID.
@@ -103,9 +104,8 @@ let get_build_requires srpm =
   | WEXITED 0 ->
      let ret = List.rev !ret in
      (* Just want the package names ... *)
-     let ret = filter_map (nvr_to_package Manual (* not used *)) ret in
-     let ret = List.map (fun { name = name } -> name) ret in
-     ret
+     List.map (fun nvr ->
+                 (nvr_to_package Manual (* not used *) nvr).name) ret
   | WEXITED _ | WSIGNALED _ | WSTOPPED _ ->
      failwith (sprintf "%s: failed" cmd)
 
@@ -537,9 +537,7 @@ let get_latest_builds () =
           fun nvr ->
             if not (StringSet.mem nvr olds) then (
               let pkg = (nvr_to_package Koji) nvr in
-              match pkg with
-              | None -> ()
-              | Some pkg -> ret := pkg :: !ret
+              ret := pkg :: !ret
             )
         ) news;
       );
@@ -567,7 +565,7 @@ let get_mass_rebuild_packages () =
   in
 
   let nvrs = read_koji_builds "koji-builds" in
-  let packages = filter_map (nvr_to_package Koji) nvrs in
+  let packages = List.map (nvr_to_package Koji) nvrs in
   packages
 
 (* Remove packages which are on the blacklist. *)
@@ -600,7 +598,7 @@ let () = Arg.parse argspec anon_fun usage_msg
 let mass_rebuild = !mass_rebuild
 let packages_from_command_line =
   let nvrs = List.rev !packages_from_command_line in
-  filter_map (nvr_to_package Manual) nvrs
+  List.map (nvr_to_package Manual) nvrs
 
 (* The main loop.  See README for how this works. *)
 
