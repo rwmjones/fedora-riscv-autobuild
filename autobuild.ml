@@ -244,7 +244,9 @@ done
 if %s; then tdnf -y install --best %s >& /root.log; fi
 
 # Build the package.
-rpmbuild --rebuild %s >& /build.log
+# Set _topdir to work around cmake bug:
+# https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
+rpmbuild --define \"_topdir /rpmbuild\" --rebuild %s >& /build.log
 
 # If we got here, the build was successful.  Drop a file into
 # the root directory so we know.
