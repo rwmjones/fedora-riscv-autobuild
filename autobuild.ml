@@ -243,10 +243,23 @@ done
 # 'dnf builddep' command.
 if %s; then tdnf -y install --best %s >& /root.log; fi
 
-# Build the package.
-# Set _topdir to work around cmake bug:
+# Make a build directory which isn't root.
+# Required to work around:
+# /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
+# and:
+# https://bugzilla.redhat.com/show_bug.cgi?id=757089
+# when building debuginfo.
+mkdir -p /builddir/build
+
+# Set _topdir to point to the build directory.
+# Also works around a cmake bug:
 # https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
-rpmbuild --define \"_topdir /rpmbuild\" --rebuild %s >& /build.log
+cat > /.rpmmacros <<EOF
+%%_topdir /builddir/build
+EOF
+
+# Build the package.
+rpmbuild --rebuild %s >& /build.log
 
 # If we got here, the build was successful.  Drop a file into
 # the root directory so we know.
@@ -406,11 +419,11 @@ let finish_build build =
       close_out (open_out (sprintf "%s/buildok" build.logdir));
 
       (* Save the RPMs and SRPM. *)
-      g#copy_out "/rpmbuild/RPMS" ".";
+      g#copy_out "/builddir/build/RPMS" ".";
       (* rpmbuild --rebuild doesn't write out an SRPM, so copy
        * the one from Koji instead.
        *)
-      (*g#copy_out "/rpmbuild/SRPMS" ".";*)
+      (*g#copy_out "/builddir/build/SRPMS" ".";*)
       copy_file build.srpm "SRPMS/";
 
       (* We have a new RPM, so recreate the repodata. *)
