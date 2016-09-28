@@ -202,12 +202,12 @@ tdnf -y install \
     redhat-rpm-config \
     rpm-build \
     sed \
+    shadow-utils \
     tar \
     unzip \
     util-linux \
     which \
     xz
-# missing from above list: shadow-utils
 
 # XXX Required after installing hack-gcc.  Not necessary once
 # we use proper gcc package.
