@@ -222,6 +222,13 @@ pushd /usr/lib
 ln -s ../lib64/gconv
 popd
 
+# Hack to make libcrypt.so.
+# Remove this when we have fixed glibc.
+pushd /lib64
+ln -s ../lib/libcrypt-2.24.so
+ln -s libcrypt-2.24.so libcrypt.so
+popd
+
 # Hack to fix python{2,3}-devel.
 # Remove this when fixed in the python package.
 for d in /usr/include/python2.7 /usr/include/python3.5m; do
