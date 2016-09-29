@@ -150,6 +150,9 @@ trap cleanup INT QUIT TERM EXIT ERR
 
 exec >& root.log
 
+# Force dnf to reread the 'local' repo.
+dnf clean all
+
 # Pick up any updated packages since stage4 was built:
 dnf -y update --best
 
