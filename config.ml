@@ -40,5 +40,5 @@ let blacklist = [
   "binutils";
   "gcc";
   "gdb";
-  "rpm"; (* Changes are upstream but not in the Fedora package yet. *)
+  "FlightGear-data"; (* Massive noarch package. *)
 ]
