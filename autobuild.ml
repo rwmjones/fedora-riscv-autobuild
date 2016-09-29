@@ -164,7 +164,7 @@ cleanup ()
     sync
     sleep 5
     sync
-    mount.static -o remount,ro / >&/dev/null
+    mount -o remount,ro / >&/dev/null
     poweroff
 }
 trap cleanup INT QUIT TERM EXIT ERR
