@@ -551,9 +551,11 @@ let not_blacklisted { name = name } = not (List.mem name blacklist)
 
 (* Parse the command line. *)
 let mass_rebuild = ref false
+let start_from = ref ""
 let argspec =
   Arg.align [
-    "--mass-rebuild", Arg.Set mass_rebuild, "Rebuild every package";
+    "--mass-rebuild", Arg.Set mass_rebuild, " Rebuild every package";
+    "--start-from", Arg.Set_string start_from, "name Start mass rebuild from pkg name";
   ]
 let packages_from_command_line = ref []
 let anon_fun str =
@@ -568,12 +570,13 @@ SUMMARY
   ./riscv-autobuild NVR [NVR ...]
      Build specified packages (list their NVR(s) on the command line).
 
-  ./riscv-autobuild --mass-rebuild
-     Try to build every package in Fedora.
+  ./riscv-autobuild --mass-rebuild [--start-from foo]
+     Try to build every package in Fedora (or start from 'foo').
 
 OPTIONS"
 let () = Arg.parse argspec anon_fun usage_msg
 let mass_rebuild = !mass_rebuild
+let start_from = !start_from
 let packages_from_command_line =
   let nvrs = List.rev !packages_from_command_line in
   List.map (nvr_to_package Manual) nvrs
@@ -663,8 +666,15 @@ let () =
   let packages =
     if packages_from_command_line <> [] then
       packages_from_command_line
-    else if mass_rebuild then
-      List.filter not_blacklisted (get_mass_rebuild_packages ())
+    else if mass_rebuild then (
+      let packages =
+        List.filter not_blacklisted (get_mass_rebuild_packages ()) in
+      if start_from <> "" then (
+        (* Drop the packages until we get to the named one. *)
+        dropwhile (fun { name = name } -> name <> start_from) packages
+      )
+      else packages
+    )
     else [] in
   let running = StringMap.empty in
   loop packages running

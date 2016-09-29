@@ -24,6 +24,17 @@ let rec filter_map f = function
       | Some y -> y :: filter_map f xs
       | None -> filter_map f xs
 
+(* Drop elements from a list while a predicate is true. *)
+let rec dropwhile f = function
+  | [] -> []
+  | x :: xs when f x -> dropwhile f xs
+  | xs -> xs
+
+(* Take elements from a list while a predicate is true. *)
+let rec takewhile f = function
+  | x :: xs when f x -> x :: takewhile f xs
+  | _ -> []
+
 (* ANSI terminal colours. *)
 let istty chan =
   Unix.isatty (Unix.descr_of_out_channel chan)
