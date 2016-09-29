@@ -90,29 +90,8 @@ let boot_vm disk bootlog =
 
   pid
 
-(* Get the BuildRequires of an SRPM as a list of package names.  Not
- * exactly made easy by the hideous output of dnf.
- *)
-let get_build_requires srpm =
-  let cmd = sprintf "dnf provides `rpm -qRp %s` | grep -vE \"^(Last|Repo)[[:space:]]\" | grep -v \"^ \" | grep -v \"^$\" | awk '{print $1}' | sort -u"
-                    srpm in
-  let chan = open_process_in cmd in
-  let ret = ref [] in
-  (try while true do ret := input_line chan :: !ret done
-   with End_of_file -> ());
-  match close_process_in chan with
-  | WEXITED 0 ->
-     let ret = List.rev !ret in
-     (* Just want the package names ... *)
-     List.map (fun nvr ->
-                 (nvr_to_package Manual (* not used *) nvr).name) ret
-  | WEXITED _ | WSIGNALED _ | WSTOPPED _ ->
-     failwith (sprintf "%s: failed" cmd)
-
 (* Write the /init script that controls the build inside the VM. *)
 let init_script build srpm_in_disk =
-  let build_requires = get_build_requires build.srpm in
-
   let tm = gmtime (gettimeofday ()) in
   let month, day, hour, min, year =
     tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_year+1900 in
@@ -169,20 +148,17 @@ cleanup ()
 }
 trap cleanup INT QUIT TERM EXIT ERR
 
-# Display list of repositories:
-tdnf repolist
-tdnf clean all
-tdnf makecache
+exec >& root.log
 
-# Pick up any updated packages:
-tdnf -y update --best
+# Pick up any updated packages since stage4 was built:
+dnf -y update --best
 
 set -e
 
 # Install the basic build environment.  This is no longer included
 # in stage4-disk.img, so we have to install these packages ourselves.
 # See also buildsys-build in comps.xml
-tdnf -y install \
+dnf -y install \
     bash \
     bzip2 \
     coreutils \
@@ -238,18 +214,6 @@ for d in /usr/include/python2.7 /usr/include/python3.5m; do
     popd
 done
 
-# Install the package BuildRequires.
-#
-# tdnf doesn't do build requirements.  'tdnf install' *only* handles
-# pure package names, not even virtual provides like 'perl(Foo)'.
-# So we have had to compute the BRs offline on the host and place
-# the package names here.  This means that we get the x86_64 BRs
-# which could be slightly different from the riscv64 BRs.
-#
-# XXX When we have compiled full dnf, replace this with
-# 'dnf builddep' command.
-if %s; then tdnf -y install --best %s >& /root.log; fi
-
 # Make a build directory which isn't root.
 # Required to work around:
 # /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
@@ -265,8 +229,16 @@ cat > /.rpmmacros <<EOF
 %%_topdir /builddir/build
 EOF
 
+# Install the SRPM.
+rpm -i %s
+
+# Install the package BuildRequires.
+dnf -y builddep /builddir/build/SPECS/%s.spec
+
+exec >& /build.log
+
 # Build the package.
-rpmbuild --rebuild %s >& /build.log
+rpmbuild -ba /builddir/build/SPECS/%s.spec
 
 # If we got here, the build was successful.  Drop a file into
 # the root directory so we know.
@@ -277,9 +249,9 @@ touch /buildok
     month day hour min year
     hostname
     build.pkg.nvr
-    (string_of_bool (build_requires <> []))
-    (String.concat " " (List.map quote build_requires))
-    srpm_in_disk in
+    srpm_in_disk
+    build.pkg.name
+    build.pkg.name in
 
   init
 
@@ -362,7 +334,7 @@ let start_build pkg =
        g#upload srpm srpm_in_disk;
 
        (* Copy the previously built RPMs into the disk and set up
-        * a local repo for tdnf to use.
+        * a local repo for dnf to use.
         *)
        g#copy_in "RPMS" "/var/tmp";
        g#write "/etc/yum.repos.d/local.repo" "\
@@ -427,11 +399,7 @@ let finish_build build =
 
       (* Save the RPMs and SRPM. *)
       g#copy_out "/builddir/build/RPMS" ".";
-      (* rpmbuild --rebuild doesn't write out an SRPM, so copy
-       * the one from Koji instead.
-       *)
-      (*g#copy_out "/builddir/build/SRPMS" ".";*)
-      copy_file build.srpm "SRPMS/";
+      g#copy_out "/builddir/build/SRPMS" ".";
 
       (* We have a new RPM, so recreate the repodata. *)
       createrepo ();
