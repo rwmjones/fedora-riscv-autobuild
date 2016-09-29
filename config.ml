@@ -19,8 +19,12 @@
 
 open Printf
 
-(* Maximum number of parallel builds to run. *)
-let max_builds = 16
+(* Maximum number of parallel builds to run.
+ *
+ * The main limiting factor may be disk space, since each build
+ * requires a copy of the disk which may be several GB.
+ *)
+let max_builds = 8
 
 (* Fedora release we are building for. *)
 let releasever = 25
