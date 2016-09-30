@@ -51,7 +51,7 @@ let ansi_restore ?(chan = stdout) () =
   if istty chan then output_string chan "\x1b[0m"
 
 (* Print message, followed by newline and flushing the output channel. *)
-let message ?col ?(chan = stdout) fs =
+let message ?col ?(chan = stdout) ?(newline = true) fs =
   (* This annotation lets type inference figure out that we need
    * to call the function with an optional ?chan not a required ~chan.
    *)
@@ -61,7 +61,7 @@ let message ?col ?(chan = stdout) fs =
     (match col with None -> () | Some col -> col ~chan ());
     fprintf chan "%s" str;
     (match col with None -> () | Some _ -> ansi_restore ~chan ());
-    output_char chan '\n';
+    if newline then output_char chan '\n';
     Pervasives.flush chan;
   in
   ksprintf display fs

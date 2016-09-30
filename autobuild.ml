@@ -614,8 +614,9 @@ let rec loop packages running =
 
   let nr_running = StringMap.cardinal running in
 
-  message ~col:ansi_blue "Running: %d (max: %d) Waiting to start: %d"
-          nr_running max_builds (List.length packages);
+  message ~col:ansi_blue ~newline:false
+          "Waiting to start: %d | Running: %d (max: %d)     \r"
+          (List.length packages) nr_running max_builds;
 
   let packages, running =
     if nr_running > 0 && packages = [] then (
