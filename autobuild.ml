@@ -627,9 +627,17 @@ let rec loop packages running =
       sleep 10;
       (packages, running)
     )
-    else if nr_running >= max_builds || packages = [] then (
-      (* If we've maxed out the number of builds, or there are no
-       * packages to build, sleep for a bit.
+    else if nr_running >= max_builds then (
+      (* If we've maxed out the number of builds, we want to
+       * wait for any package to finish.  The easiest way is
+       * a short sleep (to avoid busy waiting) and then to
+       * continue above.
+       *)
+      sleep 10;
+      (packages, running)
+    )
+    else if packages = [] then (
+      (* If there are no packages to build, sleep for a bit.
        *)
       message "Sleeping for %d seconds ..." poll_interval;
       sleep poll_interval;
