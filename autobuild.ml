@@ -336,10 +336,16 @@ let start_build pkg =
        let srpm_in_disk = sprintf "/var/tmp/%s.src.rpm" nvr in
        g#upload srpm srpm_in_disk;
 
-       (* Copy the previously built RPMs into the disk and set up
-        * a local repo for dnf to use.
+       (* Copy the previously built RPMs into the disk.  This is
+        * done in several steps to make it a bit more robust
+        * against a simultaneous createrepo.
         *)
-       g#copy_in "RPMS" "/var/tmp";
+       g#mkdir_p "/var/tmp/RPMS";
+       g#copy_in "RPMS/noarch" "/var/tmp/RPMS";
+       g#copy_in "RPMS/riscv64" "/var/tmp/RPMS";
+       g#copy_in "RPMS/repodata" "/var/tmp/RPMS";
+
+       (* Set up a local repo for dnf to use. *)
        g#write "/etc/yum.repos.d/local.repo" "\
 [local]
 name=Local RPMS
