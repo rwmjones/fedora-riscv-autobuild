@@ -153,10 +153,32 @@ exec >& root.log
 # Force dnf to reread the 'local' repo.
 dnf clean all
 
+set -e
+
+# Make a build directory which isn't root.
+# Required to work around:
+# /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
+# and:
+# https://bugzilla.redhat.com/show_bug.cgi?id=757089
+# when building debuginfo.
+mkdir -p /builddir/build
+
+# Set _topdir to point to the build directory.
+# Also works around a cmake bug:
+# https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
+cat > /.rpmmacros <<EOF
+%%_topdir /builddir/build
+EOF
+
+# Install the SRPM.
+rpm -i %s
+
+# Install the package BuildRequires.  We do this first as it's the
+# step most likely to fail.
+dnf -y builddep /builddir/build/SPECS/%s.spec
+
 # Pick up any updated packages since stage4 was built:
 dnf -y update --best
-
-set -e
 
 # Install the basic build environment.  This is no longer included
 # in stage4-disk.img, so we have to install these packages ourselves.
@@ -216,27 +238,6 @@ for d in /usr/include/python2.7 /usr/include/python3.5m; do
     ln -sf pyconfig-32.h pyconfig-64.h
     popd
 done
-
-# Make a build directory which isn't root.
-# Required to work around:
-# /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
-# and:
-# https://bugzilla.redhat.com/show_bug.cgi?id=757089
-# when building debuginfo.
-mkdir -p /builddir/build
-
-# Set _topdir to point to the build directory.
-# Also works around a cmake bug:
-# https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
-cat > /.rpmmacros <<EOF
-%%_topdir /builddir/build
-EOF
-
-# Install the SRPM.
-rpm -i %s
-
-# Install the package BuildRequires.
-dnf -y builddep /builddir/build/SPECS/%s.spec
 
 exec >& /build.log
 
