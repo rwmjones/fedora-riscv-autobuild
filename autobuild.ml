@@ -377,13 +377,22 @@ gpgcheck=0
        Some { build with pid = pid; bootlog = bootlog }
      )
 
+let needs_createrepo = ref false
+and needs_rsync = ref false
+
 let createrepo () =
-  let cmd = "make repo" in
-  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
+  if !needs_createrepo then (
+    let cmd = "make repo" in
+    if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+    needs_createrepo := false
+  )
 
 let rsync () =
-  let cmd = "make rsync" in
-  if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
+  if !needs_rsync then (
+    let cmd = "make rsync" in
+    if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+    needs_rsync := false
+  )
 
 (* Finish off a build (it has already been reaped by waitpid). *)
 let finish_build build =
@@ -412,7 +421,7 @@ let finish_build build =
       g#copy_out "/builddir/build/SRPMS" ".";
 
       (* We have a new RPM, so recreate the repodata. *)
-      createrepo ();
+      needs_createrepo := true;
       true
     )
     else false in
@@ -470,7 +479,7 @@ let finish_build build =
   close_out chan;
 
   (* We should have at least a boot.log, and maybe much more, so rsync. *)
-  rsync ()
+  needs_rsync := true
 
 module StringSet = Set.Make (String)
 
@@ -618,6 +627,10 @@ let rec loop packages running =
        reap_builds running rest
   in
   let running = reap_builds running (StringMap.bindings running) in
+
+  (* Check if we need to run createrepo/rsync after those builds finished. *)
+  createrepo ();
+  rsync ();
 
   let nr_running = StringMap.cardinal running in
 
