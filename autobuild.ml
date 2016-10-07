@@ -183,6 +183,9 @@ dnf -y update --best
 # Install the basic build environment.
 dnf -y group install buildsys-build
 
+# rpm-build doesn't depend on elfutils for some reason.
+dnf -y install elfutils
+
 # XXX Currently our hack-gcc does not Require glibc-headers.
 # Remove this when we have fixed hack-gcc.
 dnf -y install glibc-headers
