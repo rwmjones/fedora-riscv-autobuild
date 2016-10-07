@@ -37,7 +37,7 @@ distclean: veryclean
 # the autobuilder.
 
 repo:
-	cd RPMS && createrepo .
+	cd RPMS && createrepo -g ../comps-f25.xml .
 
 rsync:
 #	Don't use --delete.  Let the files accumulate at the remote side.
