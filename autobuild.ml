@@ -250,14 +250,15 @@ let copy_file src dst =
   let cmd = sprintf "cp %s %s" (quote src) (quote dst) in
   if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd)
 
-(* This code is basically copied from
- * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
- *)
 let open_disk ?readonly disk =
   let g = new Guestfs.guestfs () in
   g#add_drive_opts disk ~format:"raw" ?readonly;
   g#launch ();
 
+(*
+  (* This code is basically copied from
+   * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
+   *)
   let roots = g#inspect_os () in
   if Array.length roots == 0 || Array.length roots > 1 then
     failwith "could not open VM disk image";
@@ -271,6 +272,12 @@ let open_disk ?readonly disk =
       try g#mount dev mp
       with Guestfs.Error msg -> eprintf "%s (ignored)\n" msg
   ) mps;
+ *)
+
+  (* Inspection doesn't work with the current stage4 disk image, so
+   * instead just hard-code the mountpoints.
+   *)
+  g#mount "/dev/sda" "/";
 
   g
 
