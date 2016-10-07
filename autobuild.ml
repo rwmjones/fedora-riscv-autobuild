@@ -180,35 +180,8 @@ dnf -y builddep /builddir/build/SPECS/%s.spec
 # Pick up any updated packages since stage4 was built:
 dnf -y update --best
 
-# Install the basic build environment.  This is no longer included
-# in stage4-disk.img, so we have to install these packages ourselves.
-# See also buildsys-build in comps.xml
-dnf -y install \
-    bash \
-    bzip2 \
-    coreutils \
-    cpio \
-    diffutils \
-    elfutils \
-    fedora-release \
-    findutils \
-    gawk \
-    hack-gcc \
-    glibc-headers \
-    grep \
-    gzip \
-    info \
-    make \
-    patch \
-    redhat-rpm-config \
-    rpm-build \
-    sed \
-    shadow-utils \
-    tar \
-    unzip \
-    util-linux \
-    which \
-    xz
+# Install the basic build environment.
+dnf -y group install buildsys-build
 
 # XXX Required after installing hack-gcc.  Not necessary once
 # we use proper gcc package.
