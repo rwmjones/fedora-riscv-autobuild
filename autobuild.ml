@@ -333,6 +333,7 @@ gpgcheck=0
            pkg = pkg; srpm = srpm; logdir = logdir; disk = disk } in
 
        (* Create an init script and insert it into the disk image. *)
+       g#rm_f "/init";
        let init = init_script build srpm_in_disk in
        g#write "/init" init;
        g#chmod 0o755 "/init";
