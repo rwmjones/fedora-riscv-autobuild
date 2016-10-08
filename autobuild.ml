@@ -154,6 +154,7 @@ exec >& root.log
 dnf clean all
 
 set -e
+set -x
 
 # Make a build directory which isn't root.
 # Required to work around:
