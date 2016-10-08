@@ -174,6 +174,16 @@ EOF
 # Install the SRPM.
 rpm -i %s
 
+# XXX Temporarily update python3 and fix gpgme.
+# python3-rpm and python3-pygpgme need to be recompiled using the
+# current python3-devel, and then this section can be removed.
+dnf -y install --best python3 pygpgme
+for pkg in rpm gpgme; do
+  ln -s _$pkg.cpython-35m.so  /usr/lib64/python3.5/site-packages/$pkg/_$pkg.cpython-35m-riscv64-linux-gnu.so
+done
+ln -s _rpmb.cpython-35m.so /usr/lib64/python3.5/site-packages/rpm/_rpmb.cpython-35m-riscv64-linux-gnu.so
+ln -s _rpms.cpython-35m.so /usr/lib64/python3.5/site-packages/rpm/_rpms.cpython-35m-riscv64-linux-gnu.so
+
 # Install the package BuildRequires.  We do this first as it's the
 # step most likely to fail.
 dnf -y builddep /builddir/build/SPECS/%s.spec
