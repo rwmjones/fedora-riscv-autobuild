@@ -221,15 +221,6 @@ ln -s ../lib/libcrypt-2.24.so
 ln -s libcrypt-2.24.so libcrypt.so
 popd
 
-# Hack to fix python3-devel.
-# Remove this when fixed in the python3 package.
-for d in /usr/include/python3.5m; do
-    mkdir -p $d
-    pushd $d
-    ln -sf pyconfig-32.h pyconfig-64.h
-    popd
-done
-
 exec >& /build.log
 
 # Build the package.
