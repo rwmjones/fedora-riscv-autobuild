@@ -557,10 +557,12 @@ let not_blacklisted { name = name } = not (List.mem name blacklist)
 
 (* Parse the command line. *)
 let mass_rebuild = ref false
+let max_builds_arg = ref 0
 let start_from = ref ""
 let argspec =
   Arg.align [
     "--mass-rebuild", Arg.Set mass_rebuild, " Rebuild every package";
+    "--max-builds", Arg.Set_int max_builds_arg, "n Set maximum number of parallel builds";
     "--start-from", Arg.Set_string start_from, "name Start mass rebuild from pkg name";
   ]
 let packages_from_command_line = ref []
@@ -582,6 +584,7 @@ SUMMARY
 OPTIONS"
 let () = Arg.parse argspec anon_fun usage_msg
 let mass_rebuild = !mass_rebuild
+let max_builds = if !max_builds_arg = 0 then max_builds else !max_builds_arg
 let start_from = !start_from
 let packages_from_command_line =
   let nvrs = List.rev !packages_from_command_line in
