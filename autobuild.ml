@@ -400,14 +400,14 @@ let finish_build build =
   (* Did the build finish successfully? *)
   let buildok =
     if g#exists "/buildok" then (
+      (* Save the RPMs and SRPM. *)
+      g#copy_out "/builddir/build/RPMS" ".";
+      g#copy_out "/builddir/build/SRPMS" ".";
+
       (* We save a flag in the directory so we don't try to
        * build the package again.
        *)
       close_out (open_out (sprintf "%s/buildok" build.logdir));
-
-      (* Save the RPMs and SRPM. *)
-      g#copy_out "/builddir/build/RPMS" ".";
-      g#copy_out "/builddir/build/SRPMS" ".";
 
       (* We have a new RPM, so recreate the repodata. *)
       needs_createrepo := true;
