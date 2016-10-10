@@ -40,5 +40,14 @@ let blacklist = [
   "binutils";
   "gcc";
   "gdb";
-  "FlightGear-data"; (* Massive noarch package. *)
+
+  (* Some massive packages are excluded here. *)
+  "0ad-data";
+  "FlightGear-data";
+  "alienarena";
+  "berusky2-data";
+  "btbuilder";
+  "chromium";
+  "chromium-native_client";
+  "libreoffice";
 ]
