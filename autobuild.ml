@@ -174,6 +174,12 @@ EOF
 # Install the SRPM.
 rpm -i %s
 
+# XXX In F24, perl and python 2 were always part of the build root.
+# In later Fedora they are not.  However a lot of packages assume
+# they are still here, else spec file parsing and other things fail.
+# Remove this when we are building for F26+ only.
+dnf -y install perl python
+
 # Install the package BuildRequires.  We do this first as it's the
 # step most likely to fail.
 dnf -y builddep /builddir/build/SPECS/%s.spec
