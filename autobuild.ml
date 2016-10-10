@@ -178,9 +178,13 @@ rpm -i %s
 # In later Fedora they are not.  However a lot of packages assume
 # they are still here, else spec file parsing and other things fail.
 # Remove this when we are building for F26+ only.
+#
 # redhat-rpm-config is also needed to expand some macros in spec
 # files (eg. filter_provides_in).  So we'll probably always need this.
-dnf -y install perl python redhat-rpm-config
+#
+# perl-macros and perl-generators are both required to get
+# perl(...) dependencies correctly.
+dnf -y install perl python redhat-rpm-config perl-macros perl-generators
 
 # Install the package BuildRequires.  We do this first as it's the
 # step most likely to fail.
