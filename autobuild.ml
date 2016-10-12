@@ -289,83 +289,6 @@ let open_disk ?readonly disk =
 
   g
 
-(* Start a new build.  Returns the build object. *)
-let start_build pkg =
-  (* NVR as a single string: *)
-  let nvr = pkg.nvr in
-  (* Split NVR of the RPM: *)
-  let name = pkg.name in
-  let version = pkg.version in
-  let release = pkg.release in
-
-  let srpm = download_srpm nvr in
-  match srpm with
-  | None -> None
-  | Some srpm ->
-     (* Create the build directory. *)
-     let logdir = sprintf "logs/%s/%s-%s" name version release in
-     let cmd = sprintf "mkdir -p %s" (quote logdir) in
-     if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
-
-     (* If we already built this package successfully, don't
-      * try it again.
-      *)
-     if Sys.file_exists (sprintf "%s/buildok" logdir) then (
-       message "%s already built" nvr;
-       None
-     )
-     else (
-       (* Take an atomic full copy of the stage4 disk image. *)
-       let disk = sprintf "tmp/%s-disk.img" name in
-       copy_file "stage4-disk.img" disk;
-
-       let g = open_disk disk in
-
-       (* Copy the source RPM into the disk. *)
-       let srpm_in_disk = sprintf "/var/tmp/%s.src.rpm" nvr in
-       g#upload srpm srpm_in_disk;
-
-       (* Copy the previously built RPMs into the disk.  This is
-        * done in several steps to make it a bit more robust
-        * against a simultaneous createrepo.
-        *)
-       g#mkdir_p "/var/tmp/RPMS";
-       g#copy_in "RPMS/noarch" "/var/tmp/RPMS";
-       g#copy_in "RPMS/riscv64" "/var/tmp/RPMS";
-       g#copy_in "RPMS/repodata" "/var/tmp/RPMS";
-
-       (* Set up a local repo for dnf to use. *)
-       g#write "/etc/yum.repos.d/local.repo" "\
-[local]
-name=Local RPMS
-baseurl=file:///var/tmp/RPMS
-enabled=1
-gpgcheck=0
-";
-
-       let build =
-         { pid = 0; bootlog = ""; (* see below *)
-           pkg = pkg; srpm = srpm; logdir = logdir; disk = disk } in
-
-       (* Create an init script and insert it into the disk image. *)
-       g#rm_f "/init";
-       let init = init_script build srpm_in_disk in
-       g#write "/init" init;
-       g#chmod 0o755 "/init";
-
-       (* Close the disk image. *)
-       g#shutdown ();
-       g#close ();
-
-       message "%s build starting" nvr;
-
-       (* Boot the VM. *)
-       let bootlog = sprintf "%s/boot.log" logdir in
-       let pid = boot_vm disk bootlog in
-
-       Some { build with pid = pid; bootlog = bootlog }
-     )
-
 let needs_createrepo = ref false
 and needs_rsync = ref false
 
@@ -382,6 +305,122 @@ let rsync () =
     if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
     needs_rsync := false
   )
+
+(* Checks for [BuildArch: noarch] packages, and short-circuits them
+ * by downloading the build from Koji.  There is no reason to go to
+ * the trouble of building noarch packages.  Returns [true] if
+ * this is a noarch package that was short-circuited.
+ *)
+let check_noarch_package pkg srpm =
+  let cmd =
+    sprintf "rpm -qip %s | grep -sq '^Architecture: noarch$'" (quote srpm) in
+  let r = Sys.command cmd in
+  if r = 0 then (
+    let cmd = sprintf "
+      set -e
+      pwd=\"$(pwd)\"
+      d=\"$(mktemp -d)\"
+      pushd \"$d\" >/dev/null
+      koji download-build %s
+      mv *.noarch.rpm \"$pwd/RPMS/noarch/\"
+      mv *.src.rpm \"$pwd/SRPMS/\"
+      popd >/dev/null
+      rmdir $d
+    " (quote pkg.nvr) in
+    if Sys.command cmd <> 0 then failwith "check_noarch_package failed";
+
+    message "%s is a noarch package" pkg.nvr;
+
+    (* We have a new RPM, so recreate the repodata. *)
+    needs_createrepo := true;
+    true
+  )
+  else
+    false (* it's not a noarch package, so we gotta build it ... *)
+
+(* Start a new build.  Returns the build object. *)
+let start_build pkg =
+  (* NVR as a single string: *)
+  let nvr = pkg.nvr in
+  (* Split NVR of the RPM: *)
+  let name = pkg.name in
+  let version = pkg.version in
+  let release = pkg.release in
+
+  let srpm = download_srpm nvr in
+  match srpm with
+  | None -> None
+  | Some srpm ->
+     (* If the BuildArch is noarch, then don't do the build.
+      * Simply copy the noarch packages from Koji.
+      *)
+     if check_noarch_package pkg srpm then
+       None
+     else (
+       (* Create the build directory. *)
+       let logdir = sprintf "logs/%s/%s-%s" name version release in
+       let cmd = sprintf "mkdir -p %s" (quote logdir) in
+       if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+
+       (* If we already built this package successfully, don't
+        * try it again.
+        *)
+       if Sys.file_exists (sprintf "%s/buildok" logdir) then (
+         message "%s already built" nvr;
+         None
+       )
+       else (
+         (* Take an atomic full copy of the stage4 disk image. *)
+         let disk = sprintf "tmp/%s-disk.img" name in
+         copy_file "stage4-disk.img" disk;
+
+         let g = open_disk disk in
+
+         (* Copy the source RPM into the disk. *)
+         let srpm_in_disk = sprintf "/var/tmp/%s.src.rpm" nvr in
+         g#upload srpm srpm_in_disk;
+
+         (* Copy the previously built RPMs into the disk.  This is
+          * done in several steps to make it a bit more robust
+          * against a simultaneous createrepo.
+          *)
+         g#mkdir_p "/var/tmp/RPMS";
+         g#copy_in "RPMS/noarch" "/var/tmp/RPMS";
+         g#copy_in "RPMS/riscv64" "/var/tmp/RPMS";
+         g#copy_in "RPMS/repodata" "/var/tmp/RPMS";
+
+         (* Set up a local repo for dnf to use. *)
+         g#write "/etc/yum.repos.d/local.repo" "\
+[local]
+name=Local RPMS
+baseurl=file:///var/tmp/RPMS
+enabled=1
+gpgcheck=0
+";
+
+         let build =
+           { pid = 0; bootlog = ""; (* see below *)
+             pkg = pkg; srpm = srpm; logdir = logdir; disk = disk } in
+
+         (* Create an init script and insert it into the disk image. *)
+         g#rm_f "/init";
+         let init = init_script build srpm_in_disk in
+         g#write "/init" init;
+         g#chmod 0o755 "/init";
+
+         (* Close the disk image. *)
+         g#shutdown ();
+         g#close ();
+
+         message "%s build starting" nvr;
+
+         (* Boot the VM. *)
+         let bootlog = sprintf "%s/boot.log" logdir in
+         let pid = boot_vm disk bootlog in
+
+         Some { build with pid = pid; bootlog = bootlog }
+       )
+     )
 
 (* Finish off a build (it has already been reaped by waitpid). *)
 let finish_build build =
