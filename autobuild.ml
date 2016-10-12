@@ -148,6 +148,9 @@ cleanup ()
 }
 trap cleanup INT QUIT TERM EXIT ERR
 
+# Close stdin in case build is interactive.
+exec < /dev/null
+
 exec >& root.log
 
 # Force dnf to reread the 'local' repo.
