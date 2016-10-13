@@ -41,4 +41,8 @@ repo:
 
 rsync:
 #	Don't use --delete.  Let the files accumulate at the remote side.
-	rsync -av RPMS SRPMS logs fedorapeople.org:/project/risc-v
+	rsync -av SRPMS logs fedorapeople.org:/project/risc-v
+	rsync -av RPMS/noarch fedorapeople.org:/project/risc-v/RPMS
+	rsync -av RPMS/riscv64 fedorapeople.org:/project/risc-v/RPMS
+#	... except here because we want a single repodata set.
+	rsync -av --delete RPMS/repodata fedorapeople.org:/project/risc-v/RPMS
