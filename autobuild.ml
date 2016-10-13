@@ -199,17 +199,6 @@ dnf -y update --best
 # Install the basic build environment.
 dnf -y group install buildsys-build
 
-# XXX Currently our hack-gcc does not Require glibc-headers.
-# Remove this when we have fixed hack-gcc.
-dnf -y install glibc-headers
-
-# XXX Required after installing hack-gcc.  Not necessary once
-# we use proper gcc package.
-source /etc/profile.d/gcc.sh
-pushd /usr/bin
-ln -s gcc cc
-popd
-
 # Hack to make iconv command work.
 # Remove this when we have fixed glibc.
 pushd /usr/lib
