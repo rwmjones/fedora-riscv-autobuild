@@ -32,6 +32,7 @@ type package = {
   version : string;             (* Version. *)
   release : string;             (* Release. *)
 }
+
 type build = {
   pkg : package;                (* The package being built. *)
   pid : int;                    (* PID of qemu process. *)
@@ -559,7 +560,7 @@ let get_latest_builds () =
     )
   );
 
-  !ret
+  List.sort (fun { name = n1 } { name = n2 } -> compare n1 n2) !ret
 
 (* Return a list of all packages, used for mass rebuilds. *)
 let get_mass_rebuild_packages () =
