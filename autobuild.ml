@@ -633,8 +633,10 @@ let rec loop packages running =
   let packages =
     if packages_from_command_line <> [] || mass_rebuild then
       packages
+    else if packages = [] then
+      List.filter not_blacklisted (get_latest_builds ())
     else
-      List.filter not_blacklisted (get_latest_builds ()) in
+      packages in
 
   (* Check if any builds have finished, and reap them. *)
   let rec reap_builds running = function
