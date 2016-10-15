@@ -160,23 +160,30 @@ dnf clean all
 set -e
 set -x
 
-# Make a build directory which isn't root.
+# Create a 'mockbuild' user.
+user=mockbuild
+useradd -d /builddir $user
+
+# Use a build directory which isn't root.
+#
 # Required to work around:
 # /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
 # and:
 # https://bugzilla.redhat.com/show_bug.cgi?id=757089
 # when building debuginfo.
-mkdir -p /builddir/build
-
-# Set _topdir to point to the build directory.
+#
 # Also works around a cmake bug:
 # https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
-cat > /.rpmmacros <<EOF
-%%_topdir /builddir/build
+topdir=/builddir/build
+su -c \"mkdir $topdir\" $user
+
+# Set _topdir to point to the build directory.
+cat > /builddir/.rpmmacros <<EOF
+%%_topdir $topdir
 EOF
 
 # Install the SRPM.
-rpm -i %s
+su -c \"rpm -i %s\" $user
 
 # XXX In F24, perl and python 2 were always part of the build root.
 # In later Fedora they are not.  However a lot of packages assume
@@ -192,7 +199,7 @@ dnf -y install perl python redhat-rpm-config perl-macros perl-generators
 
 # Install the package BuildRequires.  We do this first as it's the
 # step most likely to fail.
-dnf -y builddep /builddir/build/SPECS/%s.spec
+dnf -y builddep $topdir/SPECS/%s.spec
 
 # Pick up any updated packages since stage4 was built:
 dnf -y update --best
@@ -215,8 +222,8 @@ popd
 
 exec >& /build.log
 
-# Build the package.
-rpmbuild -ba /builddir/build/SPECS/%s.spec
+# Build the package (as the non-root user).
+su -c \"rpmbuild -ba $topdir/SPECS/%s.spec\" $user
 
 # If we got here, the build was successful.  Drop a file into
 # the root directory so we know.
