@@ -250,7 +250,6 @@ let open_disk ?readonly disk =
   g#add_drive_opts disk ~format:"raw" ?readonly;
   g#launch ();
 
-(*
   (* This code is basically copied from
    * /usr/share/doc/ocaml-libguestfs-devel/inspect_vm.ml
    *)
@@ -267,12 +266,6 @@ let open_disk ?readonly disk =
       try g#mount dev mp
       with Guestfs.Error msg -> eprintf "%s (ignored)\n" msg
   ) mps;
- *)
-
-  (* Inspection doesn't work with the current stage4 disk image, so
-   * instead just hard-code the mountpoints.
-   *)
-  g#mount "/dev/sda" "/";
 
   g
 
