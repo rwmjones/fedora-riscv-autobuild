@@ -207,19 +207,6 @@ dnf -y update --best
 # Install the basic build environment.
 dnf -y group install buildsys-build
 
-# Hack to make iconv command work.
-# Remove this when we have fixed glibc.
-pushd /usr/lib
-ln -s ../lib64/gconv
-popd
-
-# Hack to make libcrypt.so.
-# Remove this when we have fixed glibc.
-pushd /lib64
-ln -s ../lib/libcrypt-2.24.so
-ln -s libcrypt-2.24.so libcrypt.so
-popd
-
 exec >& /build.log
 
 # Build the package (as the non-root user).
