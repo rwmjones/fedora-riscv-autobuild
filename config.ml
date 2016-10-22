@@ -33,6 +33,14 @@ let new_builds_tag = sprintf "f%d-updates-candidate" releasever
 (* Poll interval (in seconds). *)
 let poll_interval = 10 * 60
 
+(* Location of the temporary disk images.
+ *
+ * These can be very large, many GBs each multiplied by the
+ * maximum number of builds.
+ *)
+(*let diskdir = "tmp"*)
+let diskdir = "/mnt/tmp/disks"
+
 (* Blacklisted packages that we ignore if they appear in Koji. *)
 let blacklist = [
   "kernel";

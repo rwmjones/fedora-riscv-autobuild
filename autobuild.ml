@@ -351,7 +351,7 @@ let start_build pkg =
        )
        else (
          (* Take an atomic full copy of the stage4 disk image. *)
-         let disk = sprintf "tmp/%s-disk.img" name in
+         let disk = sprintf "%s/%s-disk.img" diskdir name in
          copy_file "stage4-disk.img" disk;
 
          let g = open_disk disk in
