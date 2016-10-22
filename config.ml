@@ -24,7 +24,7 @@ open Printf
  * The main limiting factor may be disk space, since each build
  * requires a copy of the disk which may be several GB.
  *)
-let max_builds = 8
+let max_builds = 12
 
 (* Fedora release we are building for. *)
 let releasever = 25
