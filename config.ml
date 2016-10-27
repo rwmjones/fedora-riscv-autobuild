@@ -58,4 +58,9 @@ let blacklist = [
   "chromium";
   "chromium-native_client";
   "libreoffice";
+
+  (* We hope to build this eventually, but at the moment it doesn't
+   * build but consumes 2GB of download quota each time.
+   *)
+  "texlive";
 ]
