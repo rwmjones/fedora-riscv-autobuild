@@ -616,15 +616,21 @@ let packages_from_command_line =
  *)
 module StringMap = Map.Make (String)
 
-let rec loop packages running =
+(* The [refill] parameter is a function which refills the [packages]
+ * list, eg. by getting more packages from Koji.  It should return
+ * [None] if there are no more packages and the autobuilder should
+ * exit.  It can return [Some []] if there are currently no more
+ * packages available, but the program shouldn't exit because there
+ * might be more later.
+ *)
+let rec loop refill packages running =
   (* If we have no packages, look for more. *)
-  let packages =
-    if packages_from_command_line <> [] || mass_rebuild then
-      packages
-    else if packages = [] then
-      List.filter not_blacklisted (get_latest_builds ())
-    else
-      packages in
+  let packages, quit =
+    if packages = [] then (
+      match refill () with
+      | None -> packages, true
+      | Some packages -> List.filter not_blacklisted packages, false
+    ) else packages, false in
 
   (* Check if any builds have finished, and reap them. *)
   let rec reap_builds running = function
@@ -647,76 +653,100 @@ let rec loop packages running =
 
   let nr_running = StringMap.cardinal running in
 
-  message ~col:ansi_blue ~newline:false
-          "Waiting to start: %d | Running: %d (max: %d)     \r"
-          (List.length packages) nr_running max_builds;
+  if packages = [] && nr_running = 0 && quit then
+    message ~col:ansi_green "COMPLETED: All requests processed"
+  else (
+    message ~col:ansi_blue ~newline:false
+            "Waiting to start: %d | Running: %d (max: %d)     \r"
+            (List.length packages) nr_running max_builds;
 
-  let packages, running =
-    if nr_running > 0 && packages = [] then (
-      (* If some builds are running but there are no packages waiting
-       * to be added, we want to go back and check if the builds have
-       * finished.  However do a short sleep first so we're not
-       * busy-waiting.
-       *)
-      sleep 10;
-      (packages, running)
-    )
-    else if nr_running >= max_builds then (
-      (* If we've maxed out the number of builds, we want to
-       * wait for any package to finish.  The easiest way is
-       * a short sleep (to avoid busy waiting) and then to
-       * continue above.
-       *)
-      sleep 10;
-      (packages, running)
-    )
-    else if packages = [] then (
-      (* If there are no packages to build, sleep for a bit.
-       *)
-      message "Sleeping for %d seconds ..." poll_interval;
-      sleep poll_interval;
-      (packages, running)
-    )
-    else (
-      (* Take packages from the list and start building them. *)
-      let rec start_builds packages running =
-        if packages = [] || StringMap.cardinal running >= max_builds then
-          (packages, running) (* no more packages or too many builds *)
-        else (
-          let pkg, packages = List.hd packages, List.tl packages in
-          let name = pkg.name in
-          (* If the package is already building, skip it and keep looping. *)
-          if StringMap.mem name running then
-            start_builds packages running
+    let packages, running =
+      if nr_running > 0 && packages = [] then (
+        (* If some builds are running but there are no packages waiting
+         * to be added, we want to go back and check if the builds have
+         * finished.  However do a short sleep first so we're not
+         * busy-waiting.
+         *)
+        sleep 10;
+        (packages, running)
+      )
+      else if nr_running >= max_builds then (
+        (* If we've maxed out the number of builds, we want to
+         * wait for any package to finish.  The easiest way is
+         * a short sleep (to avoid busy waiting) and then to
+         * continue above.
+         *)
+        sleep 10;
+        (packages, running)
+      )
+      else if packages = [] then (
+        (* If there are no packages to build, sleep for a bit. *)
+        message "Sleeping for %d seconds ..." poll_interval;
+        sleep poll_interval;
+        (packages, running)
+      )
+      else (
+        (* Take packages from the list and start building them. *)
+        let rec start_builds packages running =
+          if packages = [] || StringMap.cardinal running >= max_builds then
+            (packages, running) (* no more packages or too many builds *)
           else (
-            let build = start_build pkg in
-            let running =
-              match build with
-              | None -> running
-              | Some build -> StringMap.add name build running in
-            start_builds packages running
+            let pkg, packages = List.hd packages, List.tl packages in
+            let name = pkg.name in
+            (* If the package is already building, skip it and keep looping. *)
+            if StringMap.mem name running then
+              start_builds packages running
+            else (
+              let build = start_build pkg in
+              let running =
+                match build with
+                | None -> running
+                | Some build -> StringMap.add name build running in
+              start_builds packages running
+            )
           )
-        )
-      in
+        in
 
-      start_builds packages running
-    ) in
+        start_builds packages running
+      ) in
 
-  loop packages running
+    loop refill packages running
+  )
 
 let () =
-  let packages =
-    if packages_from_command_line <> [] then
-      packages_from_command_line
-    else if mass_rebuild then (
-      let packages =
-        List.filter not_blacklisted (get_mass_rebuild_packages ()) in
-      if start_from <> "" then (
-        (* Drop the packages until we get to the named one. *)
-        dropwhile (fun { name = name } -> name <> start_from) packages
-      )
-      else packages
+  let refill =
+    if packages_from_command_line <> [] then (
+      let first = ref true in
+      fun () ->
+        if !first then (
+          first := false;
+          Some packages_from_command_line
+        )
+        else None
     )
-    else [] in
-  let running = StringMap.empty in
-  loop packages running
+    else if mass_rebuild then (
+      let first = ref true in
+      fun () ->
+        if !first then (
+          first := false;
+          let packages = get_mass_rebuild_packages () in
+          let packages =
+            if start_from <> "" then (
+              (* Drop the packages until we get to the named one. *)
+              dropwhile (fun { name = name } -> name <> start_from) packages
+            )
+            else packages in
+          Some packages
+        )
+        else None
+    )
+    else (
+      (* Ordinary mode where we pull packages from Koji.
+       * This never returns [None] since the list of packages never ends.
+       *)
+      fun () ->
+        Some (get_latest_builds ())
+    )
+  in
+
+  loop refill [] (StringMap.empty)
