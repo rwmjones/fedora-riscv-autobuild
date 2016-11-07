@@ -282,7 +282,7 @@ let createrepo () =
 let rsync () =
   if !needs_rsync then (
     let cmd = "make rsync" in
-    if Sys.command cmd <> 0 then failwith (sprintf "%s: failed" cmd);
+    if Sys.command cmd <> 0 then eprintf "warning: rsync: failed\n";
     needs_rsync := false
   )
 
