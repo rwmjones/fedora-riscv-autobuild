@@ -178,9 +178,7 @@ topdir=/builddir/build
 su -c \"mkdir $topdir\" $user
 
 # Set _topdir to point to the build directory.
-cat > /builddir/.rpmmacros <<EOF
-%%_topdir $topdir
-EOF
+echo \"%%_topdir $topdir\" > /builddir/.rpmmacros
 
 # Install the SRPM.
 su -c \"rpm -i %s\" $user
