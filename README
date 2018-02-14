@@ -41,8 +41,3 @@ Builds are handled by ‘./build $srpmpath’.  Builds are done in a
 temporary directory $(ROOT)/tmp/<random-name>
 
 $(ROOT)/stage4-disk.img is the base disk image.
-
-$(ROOT)/rpms-disk.img contains the RPMs in a disk image and is
-periodically rebuilt whenever a new build succeeds.  It is mounted in
-the build VM under /rpms.  (When we have tdnf or dnf, this will be
-replaced by a proper repository hosted over HTTP).

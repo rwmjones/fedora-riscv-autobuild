@@ -27,6 +27,7 @@ name="$(rpm -q --qf '%{NAME}\n' -p $srpm)"
 
 # Log files go here.
 mkdir -p $ROOT/logs/$basename
+rm -f $ROOT/logs/$basename/*
 exec >& $ROOT/logs/$basename/script.log
 
 result ()
@@ -38,6 +39,7 @@ result ()
     rsync -av SRPMS fedorapeople.org:/project/risc-v/ ||:
     rsync -av RPMS/noarch fedorapeople.org:/project/risc-v/RPMS/ ||:
     rsync -av RPMS/riscv64 fedorapeople.org:/project/risc-v/RPMS/ ||:
+    rsync -av --delete RPMS/repodata fedorapeople.org:/project/risc-v/RPMS/ ||:
     rsync -av logs fedorapeople.org:/project/risc-v/ ||:
     rsync -av autobuild-status.html fedorapeople.org:/project/risc-v/ ||:
     popd
@@ -68,18 +70,35 @@ if rpm -qip "$basename" | grep -sq '^Architecture: noarch$'; then
 fi
 popd
 
-# Copy stage4-disk.img and rpms-disk.img into the tmpdir.
+# TDNF ONLY
+# Get the list of BR source package names.
+dnf provides `rpm -qRp $tmpdir/$basename` |
+    grep -vE "^(Last|Repo|Matched|Provide)[[:space:]]" |
+    grep -v "^ " |
+    grep -v "^$" |
+    awk '{print $1}' |
+    sed 's/-[0-9].*//' |
+    sort -u > $tmpdir/provides
+
+# Copy stage4-disk.img into the tmpdir.
 cp $ROOT/stage4-disk.img $tmpdir/$name-disk.img
-cp $ROOT/rpms-disk.img $tmpdir/$name-rpms-disk.img
 
 # Copy the init file and modify it.
 sed -e "s,@SRPM@,$basename,g" < init.in > $tmpdir/$name-init.sh
+
+# Copy the local repo file and modify it.
+sed -e "s,@WEBSERVER@,$WEBSERVER,g" < local.repo.in > $tmpdir/local.repo
 
 # Copy in the init script and SRPM.
 guestfish -a $tmpdir/$name-disk.img -i <<EOF
     upload $tmpdir/$name-init.sh /init
     chmod 0755 /init
     upload $tmpdir/$basename /var/tmp/$basename
+    upload $tmpdir/provides /var/tmp/provides
+    mkdir-p /etc/yum.repos.d
+# We need to remove these for tdnf since it will try to use them.
+    glob rm /etc/yum.repos.d/*.repo
+    upload $tmpdir/local.repo /etc/yum.repos.d/local.repo
 EOF
 
 # Boot first time to set up the root.
@@ -89,8 +108,6 @@ qemu-system-riscv64 \
     -append "console=ttyS0 ro root=/dev/vda init=/init" \
     -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
     -device virtio-blk-device,drive=hd0 \
-    -drive file=$tmpdir/$name-rpms-disk.img,format=raw,if=none,id=hd1 \
-    -device virtio-blk-device,drive=hd1 \
     -device virtio-net-device,netdev=usernet \
     -netdev user,id=usernet >& $ROOT/logs/$basename/root.log
 
@@ -107,8 +124,6 @@ qemu-system-riscv64 \
     -append "console=ttyS0 ro root=/dev/vda init=/init" \
     -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
     -device virtio-blk-device,drive=hd0 \
-    -drive file=$tmpdir/$name-rpms-disk.img,format=raw,if=none,id=hd1 \
-    -device virtio-blk-device,drive=hd1 \
     -device virtio-net-device,netdev=usernet \
     -netdev user,id=usernet >& $ROOT/logs/$basename/build.log
 
@@ -119,18 +134,19 @@ if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /buildok; then
 fi
 
 # If successful, copy out the generated RPMs.
-cp $tmpdir/$basename $ROOT/SRPMS/
 virt-copy-out -a $tmpdir/$name-disk.img /rpmbuild $tmpdir/
+
+lockfile $ROOT/lock
+cp $tmpdir/$basename $ROOT/SRPMS/
 cp $tmpdir/rpmbuild/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
 cp $tmpdir/rpmbuild/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
 
-result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
+# Recreate the repodata.
+(cd $ROOT/RPMS && createrepo .)
 
-# Now we need to regenerate the RPMs disk, but don't fail if
-# we can't do that.
-pushd $ROOT
-if virt-make-fs RPMS $tmpdir/rpms-disk.img.new -t ext2 -F raw; then
-    rm rpms-disk.img
-    mv $tmpdir/rpms-disk.img.new rpms-disk.img
-fi
-popd
+# Upload the new set of RPMs and repodata to the web server.
+rsync -a $ROOT/RPMS $WEBSYNC
+
+rm -f $ROOT/lock
+
+result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"

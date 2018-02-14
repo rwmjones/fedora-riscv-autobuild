@@ -100,13 +100,44 @@ cleanup ()
 }
 trap cleanup INT QUIT TERM EXIT ERR
 
-# Mount the RPMS disk under /RPMS.
-mkdir -p /RPMS
-mount -o ro /dev/vdb /RPMS
-
 if test ! -f /rootok; then
-  # On the first run, we need to install all the RPMs and then reboot.
-  rpm -Uvh --nodeps /RPMS/{noarch,riscv64}/*.rpm ||:
+  set -x
+  set -e
+
+  tdnf="tdnf --releasever f27"
+  $tdnf repolist
+  $tdnf clean all
+  $tdnf makecache
+  $tdnf -y update --best
+  # See also buildsys-build in comps.xml
+  # missing:
+  # fedora-release
+  # gcc
+  # shadow-utils
+  $tdnf -y install \
+    bash \
+    bzip2 \
+    coreutils \
+    cpio \
+    diffutils \
+    elfutils \
+    findutils \
+    gawk \
+    glibc-headers \
+    grep \
+    gzip \
+    info \
+    make \
+    patch \
+    redhat-rpm-config \
+    rpm-build \
+    sed \
+    tar \
+    unzip \
+    util-linux \
+    which \
+    xz \
+    `cat /var/tmp/provides`
 
   touch /rootok
 else
