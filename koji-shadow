@@ -1,0 +1,43 @@
+#!/bin/bash -
+# Copyright (C) 2016-2018 Red Hat Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+source config
+
+# Catch some obvious problems.
+if [ ! -d "$ROOT" ]; then
+    echo "$0: config was not set, read the README"
+    exit 1
+fi
+if [ "$(id -u)" -eq 0 ]; then
+    echo "$0: don't run this script as root"
+    exit 1
+fi
+
+while true; do
+    # Allow transient koji command failures.
+    if koji latest-pkg --quiet --all $TAG > $ROOT/koji-builds.2; then
+        awk '{print $1}' $ROOT/koji-builds.2 > $ROOT/koji-builds.1
+        rm $ROOT/koji-builds.2
+        diff -ur $ROOT/koji-builds $ROOT/koji-builds.1 | grep '^+' | tail -n +2 | sed 's/^+//' > $ROOT/koji-builds.new
+        rm $ROOT/koji-builds.1
+        pushd input/5000
+        koji download-build `cat $ROOT/koji-builds.new` -a src
+        popd
+    fi
+
+    sleep 10m
+done

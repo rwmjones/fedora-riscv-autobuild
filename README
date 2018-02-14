@@ -1,84 +1,48 @@
-Part of the Fedora/RISC-V project:
-https://fedoraproject.org/wiki/Architectures/RISC-V
+This is the temporary autobuilder for Fedora/RISC-V.  It takes source
+RPMs (SRPMs) from Koji, and also SRPMs that can be supplied locally,
+and attempts to rebuild them for riscv64 under a qemu emulation.
+We intend to replace this with kojid once we have built that.
 
-This is a program which automatically builds packages that have been
-successfully built in the Fedora Koji build system.  It builds them
-in a clean "stage4" virtual machine.
+This program will consume huge amounts of CPU and disk space when run.
+You need an extremely fast multicore machine and lots of disk.
 
-The process is roughly as follows:
+You must edit the configuration in ‘./config’.
 
-(1) Koji is queried for the latest builds.  If a new build is found,
-the source RPM is downloaded from Koji.
+How it works
+------------
 
-(2) The source RPM is added to a clean copy of the stage4 disk image.
-This stage4 is booted up in a QEMU virtual machine and the source RPM
-is installed along with its BuildRequires.  If this step fails (which
-it usually does) then the root.log is saved so you can later check
-what BRs were missing.
+There are several cooperating programs, but the main one is
+‘./autobuild’.  This picks up SRPMs from $(ROOT)/input and tries to
+build up to $(NR) of them in parallel.
 
-(3) We then try to build the package (again, inside the VM).  If this
-step fails then the build.log is saved so you can check it later.
+The SRPMs are picked in alphabetical order, so you can prioritize them
+by creating numbered directories under $(ROOT)/input,
+eg. $(ROOT)/input/0000/*.src.rpm will be picked before
+$(ROOT)/input/9000/*.src.rpm.
 
-(4) If the build is successful, the result is copied out of the VM.
+If a particular SRPM builds successfully then the output will be
+placed in $(ROOT)/SRPMS and $(ROOT)/RPMS.  These built RPMs are
+available for further builds and will be installed into the buildroot
+of future packages.
 
-(5) If the build is successful, then the resulting RPMs are added to
-future builds, feeding back into step (2) above.  In other words,
-future builds will be able to use the new package almost immediately.
+Whether or not an SRPM builds or fails to build (the usual case,
+sadly), logs files are left in $(ROOT)/logs/<NVR>/.
 
-(6) The root.log, build.log, any RPMs and SRPMs, and any new disk
-image is rsynced to the public webserver at
-https://fedorapeople.org/groups/risc-v/
+Noarch SRPMs are short-circuited.  There is no need to build noarch
+packages on riscv64, so we just download the result from Fedora Koji
+and copy it to $(ROOT)/RPMS/noarch/
 
-How to run it:
+New Fedora Koji builds are picked up and downloaded into
+$(ROOT)/input/5000/ by a separate program called ‘./koji-shadow’.
+This doesn't run automatically, you have to create the input directory
+and start the program by hand.
 
-(1) Install and/or download any requirements (see below).
+Builds are handled by ‘./build $srpmpath’.  Builds are done in a
+temporary directory $(ROOT)/tmp/<random-name>
 
-(2) Edit the 'config.ml' file and adjust the configuration to suit.
+$(ROOT)/stage4-disk.img is the base disk image.
 
-(3) Build the program:
-
-  make
-
-(4) Run this command as a non-root user:
-
-  ./riscv-autobuild
-
-or if you just want to build a particular set of packages (which is
-useful for testing), provide the exact NVRs of each, eg:
-
-  ./riscv-autobuild emacs-25.1-1.fc25 which-2.21-1.fc25
-
-or if you want to do a "mass rebuild" (be warned, this could take
-an enormous amount of time and compute resources):
-
-  ./riscv-autobuild --mass-rebuild
-
-Requirements:
-
- - A fast server with plenty of RAM
-
- - Recent Fedora.  It probably works with RHEL or CentOS 7 too.
-
- - OCaml compiler (ocamlc)
-
- - koji command
-
- - riscv-qemu from https://copr.fedorainfracloud.org/coprs/rjones/riscv/
-
- - ocaml-libguestfs-devel
-
- - ocaml-pcre-devel
-
- - createrepo
-
- - rsync
-
- - The Fedora/RISC-V kernel, either built from
-   https://github.com/rwmjones/fedora-riscv , or downloaded to the
-   current directory from http://oirase.annexia.org/riscv/vmlinux
-
- - Download http://oirase.annexia.org/stage4-disk.img to the current
-   directory.
-
-To upload built packages you will need rsync access to
-https://fedorapeople.org/groups/risc-v/
+$(ROOT)/rpms-disk.img contains the RPMs in a disk image and is
+periodically rebuilt whenever a new build succeeds.  It is mounted in
+the build VM under /rpms.  (When we have tdnf or dnf, this will be
+replaced by a proper repository hosted over HTTP).

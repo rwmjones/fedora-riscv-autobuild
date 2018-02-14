@@ -1,15 +1,1 @@
 *~
-*.cmi
-*.cmo
-
-/riscv-autobuild
-/stage4-disk.img*
-/vmlinux
-
-/logs/*
-
-/RPMS/*
-/SRPMS/*
-
-/tmp/*-disk.img
-/tmp/*.rpm

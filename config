@@ -1,0 +1,11 @@
+# Configuration.
+
+# Where all input and output files go.  Uses huge amounts of disk
+# space under here.
+ROOT=/mnt/tmp/riscv64
+
+# Maximum number of parallel builds.
+NR=8
+
+# Tag to search for new Koji builds.
+TAG=f27-updates-candidate
