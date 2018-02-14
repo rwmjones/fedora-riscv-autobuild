@@ -78,6 +78,7 @@ dnf provides `rpm -qRp $tmpdir/$basename` |
     grep -v "^$" |
     awk '{print $1}' |
     sed 's/-[0-9].*//' |
+    grep -v coreutils-single |
     sort -u > $tmpdir/provides
 
 # Copy stage4-disk.img into the tmpdir.
