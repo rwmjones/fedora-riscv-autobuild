@@ -43,8 +43,6 @@ result ()
     popd
 }
 
-# XXX SHORT CIRCUIT NOARCH RPMS
-
 # Create a temporary directory for the build, and ensure it is always
 # cleaned up after.
 tmpdir="$(mktemp -d $ROOT/tmp/$name.XXXXXX)"
@@ -59,6 +57,16 @@ trap cleanup INT QUIT TERM EXIT ERR
 # Move the SRPM into tmpdir.  Also prevents it from being picked up
 # again by the autobuild script.
 mv $srpm $tmpdir/
+
+# Short-circuit noarch RPMs.  We can just download them.
+pushd $tmpdir
+if rpm -qip "$basename" | grep -sq '^Architecture: noarch$'; then
+    koji download-build `echo "$basename" | sed s/.src.rpm//`
+    mv *.noarch.rpm $ROOT/RPMS/noarch/
+    mv *.src.rpm $ROOT/SRPMS/
+    exit 0
+fi
+popd
 
 # Copy stage4-disk.img and rpms-disk.img into the tmpdir.
 cp $ROOT/stage4-disk.img $tmpdir/$name-disk.img
