@@ -136,8 +136,10 @@ if test ! -f /rootok; then
     unzip \
     util-linux \
     which \
-    xz \
-    `cat /var/tmp/provides`
+    xz
+  if [ "$(cat /var/tmp/provides)" != "" ]; then
+      $tdnf -y install $(cat /var/tmp/provides)
+  fi
 
   touch /rootok
 else
