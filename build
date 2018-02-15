@@ -56,6 +56,7 @@ if rpm -qip "$basename" | grep -sq '^Architecture: noarch$'; then
     koji download-build `echo "$basename" | sed s/.src.rpm//`
     mv *.noarch.rpm $ROOT/RPMS/noarch/
     mv *.src.rpm $ROOT/SRPMS/
+    ./push
     exit 0
 fi
 popd
@@ -137,14 +138,5 @@ cp $tmpdir/$basename $ROOT/SRPMS/
 cp $tmpdir/rpmbuild/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
 cp $tmpdir/rpmbuild/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
 
-lockfile $ROOT/lock
-
-# Recreate the repodata.
-(cd $ROOT/RPMS && createrepo .)
-
-# Upload the new set of RPMs and repodata to the web server.
-rsync -a $ROOT/RPMS $WEBSYNC
-
-rm -f $ROOT/lock
-
+./push
 ./upload srpms rpms repodata logs status
