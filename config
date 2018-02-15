@@ -22,7 +22,6 @@ QEMU_MEMORY="4G"
 TAG=f27-updates-candidate
 
 # To share built RPMs with the builder VM you have to set up a web
-# server which is also available as a local path.
+# server which is also available as an rsync path.
 WEBSERVER=http://192.168.0.249/scratch
-WEBPATH=/mnt/scratch
 WEBSYNC=192.168.0.249:/mnt/scratch
