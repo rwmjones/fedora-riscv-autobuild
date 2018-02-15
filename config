@@ -4,6 +4,10 @@
 # space under here.
 ROOT=/mnt/tmp/riscv64
 
+# How often to check load and run new jobs (in seconds).  Don't set
+# this too low else it will overload the server.
+INTERVAL=15
+
 # Maximum number of parallel builds.
 NR=8
 

@@ -38,5 +38,5 @@ while true; do
             ./build $srpm &
         fi
     fi
-    sleep 60
+    sleep $INTERVAL
 done
