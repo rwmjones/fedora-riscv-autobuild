@@ -33,16 +33,6 @@ exec >& $ROOT/logs/$basename/script.log
 result ()
 {
     echo "$@" >> $ROOT/autobuild-status.html
-
-    # Try to rsync with the main webserver, don't fail if we can't.
-    pushd $ROOT
-    rsync -av SRPMS fedorapeople.org:/project/risc-v/ ||:
-    rsync -av RPMS/noarch fedorapeople.org:/project/risc-v/RPMS/ ||:
-    rsync -av RPMS/riscv64 fedorapeople.org:/project/risc-v/RPMS/ ||:
-    rsync -av --delete RPMS/repodata fedorapeople.org:/project/risc-v/RPMS/ ||:
-    rsync -av logs fedorapeople.org:/project/risc-v/ ||:
-    rsync -av autobuild-status.html fedorapeople.org:/project/risc-v/ ||:
-    popd
 }
 
 # Create a temporary directory for the build, and ensure it is always
@@ -117,6 +107,7 @@ qemu-system-riscv64 \
 # Did the root get set up correctly?
 if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /rootok; then
     result "<span style='color:red;'><b>FAIL</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
+    ./upload logs status
     exit 1
 fi
 
@@ -133,16 +124,20 @@ qemu-system-riscv64 \
 # Did the build work?
 if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /buildok; then
     result "<span style='color:red;'><b>FAIL</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
+    ./upload logs status
     exit 1
 fi
+
+result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
 
 # If successful, copy out the generated RPMs.
 virt-copy-out -a $tmpdir/$name-disk.img /rpmbuild $tmpdir/
 
-lockfile $ROOT/lock
 cp $tmpdir/$basename $ROOT/SRPMS/
 cp $tmpdir/rpmbuild/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
 cp $tmpdir/rpmbuild/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
+
+lockfile $ROOT/lock
 
 # Recreate the repodata.
 (cd $ROOT/RPMS && createrepo .)
@@ -152,4 +147,4 @@ rsync -a $ROOT/RPMS $WEBSYNC
 
 rm -f $ROOT/lock
 
-result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
+./upload srpms rpms repodata logs status
