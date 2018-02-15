@@ -79,6 +79,8 @@ dnf provides `rpm -qRp $tmpdir/$basename` |
     awk '{print $1}' |
     sed 's/-[0-9].*//' |
     grep -v coreutils-single |
+    grep -v '^gcc$' |
+    grep -v '^gcc-c++$' |
     sort -u > $tmpdir/provides
 
 # Copy stage4-disk.img into the tmpdir.
