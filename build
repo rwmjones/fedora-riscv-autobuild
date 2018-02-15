@@ -51,15 +51,15 @@ trap cleanup INT QUIT TERM EXIT ERR
 mv $srpm $tmpdir/
 
 # Short-circuit noarch RPMs.  We can just download them.
-pushd $tmpdir
-if rpm -qip "$basename" | grep -sq '^Architecture: noarch$'; then
+if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
+    pushd $tmpdir
     koji download-build `echo "$basename" | sed s/.src.rpm//`
     mv *.noarch.rpm $ROOT/RPMS/noarch/
     mv *.src.rpm $ROOT/SRPMS/
+    popd
     ./push
     exit 0
 fi
-popd
 
 # TDNF ONLY
 # Get the list of BR source package names.
