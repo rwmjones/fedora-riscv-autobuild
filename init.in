@@ -108,7 +108,7 @@ if test ! -f /rootok; then
   $tdnf repolist
   $tdnf clean all
   $tdnf makecache
-  $tdnf -y update --best
+  $tdnf -y update --best --allowerasing
   # See also buildsys-build in comps.xml
   # missing:
   # fedora-release
