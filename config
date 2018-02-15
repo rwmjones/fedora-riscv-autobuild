@@ -11,6 +11,13 @@ INTERVAL=15
 # Maximum number of parallel builds.
 NR=8
 
+# Extra QEMU parameters.  You can use this to allocate more than
+# one virtual CPU per builder, add extra devices, etc.
+QEMU_EXTRA="-smp 4"
+
+# Memory allocated to each qemu instance.
+QEMU_MEMORY="4G"
+
 # Tag to search for new Koji builds.
 TAG=f27-updates-candidate
 

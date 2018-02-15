@@ -96,7 +96,7 @@ EOF
 
 # Boot first time to set up the root.
 qemu-system-riscv64 \
-    -nographic -machine virt -m 2G \
+    -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
     -kernel $ROOT/bbl \
     -append "console=ttyS0 ro root=/dev/vda init=/init" \
     -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
@@ -113,7 +113,7 @@ fi
 
 # Boot second time to perform the build.
 qemu-system-riscv64 \
-    -nographic -machine virt -m 2G \
+    -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
     -kernel $ROOT/bbl \
     -append "console=ttyS0 ro root=/dev/vda init=/init" \
     -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
