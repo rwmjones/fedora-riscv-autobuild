@@ -104,11 +104,13 @@ if test ! -f /rootok; then
   set -x
   set -e
 
+  rm -f /etc/yum.repos.d/fedora*.repo
   tdnf="tdnf --releasever f27"
   $tdnf repolist
   $tdnf clean all
   $tdnf makecache
   $tdnf -y update --best --allowerasing
+  rm -f /etc/yum.repos.d/fedora*.repo
   # See also buildsys-build in comps.xml
   # missing:
   # fedora-release
@@ -137,9 +139,11 @@ if test ! -f /rootok; then
     util-linux \
     which \
     xz
+  rm -f /etc/yum.repos.d/fedora*.repo
   if [ "$(cat /var/tmp/provides)" != "" ]; then
       $tdnf -y install $(cat /var/tmp/provides)
   fi
+  rm -f /etc/yum.repos.d/fedora*.repo
 
   touch /rootok
 else
