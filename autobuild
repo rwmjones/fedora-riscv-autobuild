@@ -29,7 +29,8 @@ fi
 
 while true; do
     # Number of current builds ongoing.
-    nbuilds=`pidof qemu-system-riscv64 | wc -w`
+    # Can remove 'dnf' here when we get rid of tdnf.
+    nbuilds=`pidof cp dnf qemu-system-riscv64 | wc -w`
     if [ $nbuilds -lt $NR ]; then
         # Can start a new build, but which?
         srpm="$(find $ROOT/input -name '*.src.rpm' | sort -V | head -1)"
