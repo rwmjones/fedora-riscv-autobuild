@@ -165,7 +165,6 @@ else
            --define "_udevrulesdir /usr/lib/udev/rules.d" \
            --define "_emacs_sitestartdir /usr/share/emacs/site-lisp/site-start.d" \
            --define "_emacs_sitelispdir /usr/share/emacs/site-lisp" \
-           --nodeps \
            --nocheck
 
   touch /buildok
