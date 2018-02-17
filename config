@@ -9,7 +9,7 @@ ROOT=/mnt/tmp/riscv64
 INTERVAL=15
 
 # Maximum number of parallel builds.
-NR=8
+NR=12
 
 # Extra QEMU parameters.  You can use this to allocate more than
 # one virtual CPU per builder, add extra devices, etc.
