@@ -152,6 +152,9 @@ else
   set -x
   set -e
 
+  # Close stdin in case build is interactive.
+  exec < /dev/null
+
   rm -rf /rpmbuild
   mkdir -p /rpmbuild
 
