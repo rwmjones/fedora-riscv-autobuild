@@ -125,6 +125,7 @@ if test ! -f /rootok; then
     elfutils \
     findutils \
     gawk \
+    glibc-devel \
     glibc-headers \
     grep \
     gzip \
