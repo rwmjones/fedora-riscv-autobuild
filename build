@@ -53,7 +53,7 @@ mv $srpm $tmpdir/
 # Short-circuit noarch RPMs.  We can just download them.
 if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
     pushd $tmpdir
-    koji download-build `echo "$basename" | sed s/.src.rpm//`
+    koji -q download-build `echo "$basename" | sed s/.src.rpm//`
     mv *.noarch.rpm $ROOT/RPMS/noarch/
     mv *.src.rpm $ROOT/SRPMS/
     popd
