@@ -64,7 +64,7 @@ fi
 # TDNF ONLY
 # Get the list of BR source package names.
 dnf provides `rpm -qRp $tmpdir/$basename` |
-    grep -vE "^(Last|Repo|Matched|Provide)[[:space:]]" |
+    grep -vE "^(Last|Repo|Matched|Provide|Filename)[[:space:]]" |
     grep -v "^ " |
     grep -v "^$" |
     awk '{print $1}' |
