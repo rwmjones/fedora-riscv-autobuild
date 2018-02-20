@@ -107,7 +107,7 @@ qemu-system-riscv64 \
 
 # Did the root get set up correctly?
 if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /rootok; then
-    result "<span style='color:red;'><b>FAIL</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
+    result "<span style='color:brown;'><b>DEPEND</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
     ./upload logs status
     exit 1
 fi
