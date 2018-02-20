@@ -19,12 +19,14 @@ source config
 
 # Rebuild the repository and push everything to the local web server.
 
+w="$(pwd)"
+
 lockfile $ROOT/lock
 pushd $ROOT
 
 # Recreate the repodata.
 pushd $ROOT/RPMS
-createrepo .
+createrepo -g "$w/comps-f28.xml" .
 popd
 
 # Upload the new set of RPMs and repodata to the web server.
