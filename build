@@ -117,11 +117,11 @@ fi
 result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
 
 # If successful, copy out the generated RPMs.
-virt-copy-out -a $tmpdir/$name-disk.img /rpmbuild $tmpdir/
+virt-copy-out -a $tmpdir/$name-disk.img /builddir/build/RPMS /builddir/build/SRPMS $tmpdir/
 
-cp $tmpdir/$basename $ROOT/SRPMS/
-cp $tmpdir/rpmbuild/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
-cp $tmpdir/rpmbuild/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
+cp $tmpdir/SRPMS/*.src.rpm $ROOT/SRPMS/
+cp $tmpdir/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
+cp $tmpdir/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
 
 ./push
 ./upload srpms rpms repodata logs status
