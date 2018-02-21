@@ -100,51 +100,48 @@ cleanup ()
 }
 trap cleanup INT QUIT TERM EXIT ERR
 
+user=mockbuild
+topdir=/builddir/build
+
 if test ! -f /rootok; then
   set -x
   set -e
 
-  rm -f /etc/yum.repos.d/fedora*.repo
-  tdnf="tdnf --releasever f27"
-  $tdnf repolist
-  $tdnf clean all
-  $tdnf makecache
-  $tdnf -y update --best --allowerasing
-  rm -f /etc/yum.repos.d/fedora*.repo
-  # See also buildsys-build in comps.xml
-  # missing:
-  # fedora-release
-  # gcc
-  # shadow-utils
-  $tdnf -y install \
-    bash \
-    bzip2 \
-    coreutils \
-    cpio \
-    diffutils \
-    elfutils \
-    findutils \
-    gawk \
-    glibc-devel \
-    glibc-headers \
-    grep \
-    gzip \
-    info \
-    make \
-    patch \
-    redhat-rpm-config \
-    rpm-build \
-    sed \
-    tar \
-    unzip \
-    util-linux \
-    which \
-    xz
-  rm -f /etc/yum.repos.d/fedora*.repo
-  if [ "$(cat /var/tmp/provides)" != "" ]; then
-      $tdnf -y install $(cat /var/tmp/provides)
-  fi
-  rm -f /etc/yum.repos.d/fedora*.repo
+  # For dnf to reread the 'local' repo.
+  dnf clean all
+
+  # Create a 'mockbuild' user.
+  useradd -d /builddir $user
+
+  # Use a build directory which isn't root.
+  #
+  # Required to work around:
+  # /usr/lib/rpm/debugedit: -b arg has to be either the same length as -d arg, or more than 1 char longer
+  # and:
+  # https://bugzilla.redhat.com/show_bug.cgi?id=757089
+  # when building debuginfo.
+  #
+  # Also works around a cmake bug:
+  # https://github.com/rwmjones/fedora-riscv/commit/68780a3e928b01f9012f5e8cd014ff636a7467b3
+  su -c "mkdir $topdir" $user
+
+  # Set _topdir to point to the build directory.
+  echo "%_topdir $topdir" > /builddir/.rpmmacros
+
+  # Install the SRPM.
+  su -c "rpm -i /var/tmp/@SRPM@" $user
+
+  # Install the package BuildRequires.  We do this first as it's the
+  # step most likely to fail.
+  dnf -y builddep $topdir/SPECS/@NAME@.spec
+
+  # Pick up any updated packages since stage4 was built:
+  dnf -y update --best
+
+  # Install the basic build environment.
+  dnf -y group install buildsys-build
+  # XXX We need this temporarily while using hack-gcc.
+  dnf -y install hack-gcc glibc-devel
 
   touch /rootok
 else
@@ -158,18 +155,14 @@ else
   rm -rf /rpmbuild
   mkdir -p /rpmbuild
 
-  rpmbuild --rebuild /var/tmp/@SRPM@ \
-           --define "debug_package %{nil}" \
+  su -c "rpmbuild -ba $topdir/SPECS/@NAME@.spec \
+           --define \"debug_package %{nil}\" \
            --undefine _annotated_build \
-           --define "_topdir /rpmbuild" \
-           --define "_missing_doc_files_terminate_build %{nil}" \
-           --define "_unitdir /usr/lib/systemd/system" \
-           --define "_sysctldir /usr/lib/sysctl.d" \
-           --define "_tmpfilesdir /usr/lib/tmpfiles.d" \
-           --define "_udevrulesdir /usr/lib/udev/rules.d" \
-           --define "_emacs_sitestartdir /usr/share/emacs/site-lisp/site-start.d" \
-           --define "_emacs_sitelispdir /usr/share/emacs/site-lisp" \
-           --nocheck
+           --define \"_missing_doc_files_terminate_build %{nil}\" \
+           --define \"_emacs_sitestartdir /usr/share/emacs/site-lisp/site-start.d\" \
+           --define \"_emacs_sitelispdir /usr/share/emacs/site-lisp\" \
+           --nocheck \
+  " $user
 
   touch /buildok
 fi

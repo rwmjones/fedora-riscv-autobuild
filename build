@@ -61,24 +61,13 @@ if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
     exit 0
 fi
 
-# TDNF ONLY
-# Get the list of BR source package names.
-dnf provides `rpm -qRp $tmpdir/$basename` |
-    grep -vE "^(Last|Repo|Matched|Provide|Filename)[[:space:]]" |
-    grep -v "^ " |
-    grep -v "^$" |
-    awk '{print $1}' |
-    sed 's/-[0-9].*//' |
-    grep -v coreutils-single |
-    grep -v '^gcc$' |
-    grep -v '^gcc-c++$' |
-    sort -u > $tmpdir/provides
-
 # Copy stage4-disk.img into the tmpdir.
 cp $ROOT/stage4-disk.img $tmpdir/$name-disk.img
 
 # Copy the init file and modify it.
-sed -e "s,@SRPM@,$basename,g" < init.in > $tmpdir/$name-init.sh
+sed -e "s,@SRPM@,$basename,g" \
+    -e "s,@NAME@,$name,g" \
+    < init.in > $tmpdir/$name-init.sh
 
 # Copy the local repo file and modify it.
 sed -e "s,@WEBSERVER@,$WEBSERVER,g" < local.repo.in > $tmpdir/local.repo
@@ -88,10 +77,6 @@ guestfish -a $tmpdir/$name-disk.img -i <<EOF
     upload $tmpdir/$name-init.sh /init
     chmod 0755 /init
     upload $tmpdir/$basename /var/tmp/$basename
-    upload $tmpdir/provides /var/tmp/provides
-    mkdir-p /etc/yum.repos.d
-# We need to remove these for tdnf since it will try to use them.
-    glob rm /etc/yum.repos.d/*.repo
     upload $tmpdir/local.repo /etc/yum.repos.d/local.repo
 EOF
 
