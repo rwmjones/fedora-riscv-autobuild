@@ -82,7 +82,7 @@ virt-customize -a $tmpdir/$name-disk.img \
 qemu-system-riscv64 \
     -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
     -kernel $ROOT/bbl \
-    -append "console=ttyS0 ro root=/dev/vda" \
+    -append "ro root=/dev/vda" \
     -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
     -device virtio-blk-device,drive=hd0 \
     -device virtio-net-device,netdev=usernet \
