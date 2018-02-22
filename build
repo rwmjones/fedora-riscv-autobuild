@@ -64,57 +64,57 @@ fi
 # Copy stage4-disk.img into the tmpdir.
 cp $ROOT/stage4-disk.img $tmpdir/$name-disk.img
 
-# Copy the init file and modify it.
+# Copy the firstboot file and modify it.
 sed -e "s,@SRPM@,$basename,g" \
     -e "s,@NAME@,$name,g" \
-    < init.in > $tmpdir/$name-init.sh
+    < boot.sh > $tmpdir/$name-boot.sh
 
 # Copy the local repo file and modify it.
 sed -e "s,@WEBSERVER@,$WEBSERVER,g" < local.repo.in > $tmpdir/local.repo
 
-# Copy in the init script and SRPM.
-guestfish -a $tmpdir/$name-disk.img -i <<EOF
-    upload $tmpdir/$name-init.sh /init
-    chmod 0755 /init
-    upload $tmpdir/$basename /var/tmp/$basename
-    upload $tmpdir/local.repo /etc/yum.repos.d/local.repo
+# Copy in the firstboot script, SRPM and repo.
+virt-customize -a $tmpdir/$name-disk.img \
+  --firstboot $tmpdir/$name-boot.sh \
+  --copy-in $tmpdir/$basename:/var/tmp \
+  --copy-in $tmpdir/local.repo:/etc/yum.repos.d/
+
+# Boot the guest.
+qemu-system-riscv64 \
+    -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
+    -kernel $ROOT/bbl \
+    -append "console=ttyS0 ro root=/dev/vda" \
+    -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
+    -device virtio-blk-device,drive=hd0 \
+    -device virtio-net-device,netdev=usernet \
+    -netdev user,id=usernet
+
+# Copy out the root.log and build.log files.
+guestfish --ro -a $tmpdir/$name-disk.img -i <<EOF
+  -download /root.log $ROOT/logs/$basename/root.log
+  -download /build.log $ROOT/logs/$basename/build.log
+  -download /buildok $tmpdir/buildok
 EOF
 
-# Boot first time to set up the root.
-qemu-system-riscv64 \
-    -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
-    -kernel $ROOT/bbl \
-    -append "console=ttyS0 ro root=/dev/vda init=/init" \
-    -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
-    -device virtio-blk-device,drive=hd0 \
-    -device virtio-net-device,netdev=usernet \
-    -netdev user,id=usernet >& $ROOT/logs/$basename/root.log
-
-# Did the root get set up correctly?
-if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /rootok; then
-    result "<span style='color:brown;'><b>DEPEND</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
-    ./upload logs status
-    exit 1
-fi
-
-# Boot second time to perform the build.
-qemu-system-riscv64 \
-    -nographic -machine virt $QEMU_EXTRA -m $QEMU_MEMORY \
-    -kernel $ROOT/bbl \
-    -append "console=ttyS0 ro root=/dev/vda init=/init" \
-    -drive file=$tmpdir/$name-disk.img,format=raw,if=none,id=hd0 \
-    -device virtio-blk-device,drive=hd0 \
-    -device virtio-net-device,netdev=usernet \
-    -netdev user,id=usernet >& $ROOT/logs/$basename/build.log
-
-# Did the build work?
-if ! guestfish --ro -a $tmpdir/$name-disk.img -i stat /buildok; then
+# How far did the build get?
+if [ -f $tmpdir/buildok ]; then
+    # Build completed successfully.
+    result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
+elif [ -f $ROOT/logs/$basename/build.log ]; then
+    # Build failed.
     result "<span style='color:red;'><b>FAIL</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
     ./upload logs status
     exit 1
+elif [ -f $ROOT/logs/$basename/root.log ]; then
+    # Root failed.
+    result "<span style='color:brown;'><b>DEPEND</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
+    ./upload logs status
+    exit 1
+else
+    # Something really bad went wrong.
+    result "<span style='color:red;'><b>BAD</b></span>: $basename (no root or boot log)<br/>"
+    ./upload logs status
+    exit 1
 fi
-
-result "<span style='color:green;'><b>SUCCESS:</b></span> $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
 
 # If successful, copy out the generated RPMs.
 virt-copy-out -a $tmpdir/$name-disk.img /builddir/build/RPMS /builddir/build/SRPMS $tmpdir/
