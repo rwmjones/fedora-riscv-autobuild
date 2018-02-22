@@ -30,7 +30,7 @@ createrepo -g "$w/comps-f28.xml" .
 popd
 
 # Upload the new set of RPMs and repodata to the web server.
-rsync -a $ROOT/RPMS $WEBSYNC
+rsync -av --delete $ROOT/RPMS $WEBSYNC
 
 popd
 rm -f $ROOT/lock
