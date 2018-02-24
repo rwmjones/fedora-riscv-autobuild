@@ -32,6 +32,7 @@ exec >& /root.log
 
 # For dnf to reread the 'local' repo.
 dnf clean all
+dnf makecache --verbose
 
 # Create a 'mockbuild' user.
 useradd -d /builddir $user
