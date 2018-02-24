@@ -54,6 +54,16 @@ mv $srpm $tmpdir/
 if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
     pushd $tmpdir
     koji -q download-build `echo "$basename" | sed s/.src.rpm//`
+    # Koji doesn't give a proper error if the package doesn't exist.
+    for f in *.noarch.rpm; do
+        if grep -sq 'was not found on this server' "$f"; then
+            rm "$f"
+        fi
+    done
+    if ! compgen -G "*.noarch.rpm" >/dev/null; then
+        echo "$basename: no noarch packages could be downloaded"
+        exit 1
+    fi
     mv *.noarch.rpm $ROOT/RPMS/noarch/
     mv *.src.rpm $ROOT/SRPMS/
     popd
