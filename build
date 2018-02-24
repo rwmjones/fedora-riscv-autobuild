@@ -57,7 +57,7 @@ if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
     mv *.noarch.rpm $ROOT/RPMS/noarch/
     mv *.src.rpm $ROOT/SRPMS/
     popd
-    ./push
+    touch $ROOT/needs-push
     exit 0
 fi
 
@@ -102,17 +102,17 @@ if [ -f $tmpdir/buildok ]; then
 elif [ -f $ROOT/logs/$basename/build.log ]; then
     # Build failed.
     result "<span style='color:red;'><b>FAIL</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <a href=logs/$basename/build.log>build.log</a> <br/>"
-    ./upload logs status
+    touch $ROOT/needs-upload
     exit 1
 elif [ -f $ROOT/logs/$basename/root.log ]; then
     # Root failed.
     result "<span style='color:brown;'><b>DEPEND</b></span>: $basename <a href=logs/$basename/root.log>root.log</a> <br/>"
-    ./upload logs status
+    touch $ROOT/needs-upload
     exit 1
 else
     # Something really bad went wrong.
     result "<span style='color:red;'><b>BAD</b></span>: $basename (no root or boot log)<br/>"
-    ./upload logs status
+    touch $ROOT/needs-upload
     exit 1
 fi
 
@@ -123,5 +123,4 @@ cp $tmpdir/SRPMS/*.src.rpm $ROOT/SRPMS/
 cp $tmpdir/RPMS/noarch/*.noarch.rpm $ROOT/RPMS/noarch/ ||:
 cp $tmpdir/RPMS/riscv64/*.riscv64.rpm $ROOT/RPMS/riscv64/ ||:
 
-./push
-./upload srpms rpms repodata logs status
+touch $ROOT/needs-push $ROOT/needs-upload

@@ -38,5 +38,18 @@ while true; do
             ./build $srpm &
         fi
     fi
+
+    # Do we need to createrepo and push?
+    if test -f $ROOT/needs-push; then
+        rm -f $ROOT/needs-push
+        ./push
+    fi
+
+    # Do we need to upload to the public repo?
+    if test -f $ROOT/needs-upload; then
+        rm -f $ROOT/needs-upload
+        ./upload srpms rpms repodata logs status
+    fi
+
     sleep $INTERVAL
 done
