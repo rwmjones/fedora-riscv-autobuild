@@ -26,11 +26,11 @@ pushd $ROOT
 
 # Recreate the repodata.
 pushd $ROOT/RPMS
-createrepo -g "$w/comps-f28.xml" .
+createrepo -q -g "$w/comps-f28.xml" .
 popd
 
 # Upload the new set of RPMs and repodata to the web server.
-rsync -av --delete $ROOT/RPMS $WEBSYNC
+rsync -a --delete $ROOT/RPMS $WEBSYNC
 
 popd
 rm -f $ROOT/lock
