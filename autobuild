@@ -53,9 +53,10 @@ while true; do
         if test -f $ROOT/needs-upload; then
             rm -f $ROOT/needs-upload
             echo "Uploading to the public web server"
-            ./upload srpms rpms repodata logs status
+            ./upload srpms rpms repodata
         fi
     fi
 
+    ./upload logs status
     sleep $INTERVAL
 done
