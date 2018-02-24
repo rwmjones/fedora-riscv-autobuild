@@ -28,6 +28,7 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 while true; do
+    busy=0
     # Number of current builds ongoing.
     nbuilds=`pidof cp qemu-system-riscv64 virt-customize | wc -w`
     if [ $nbuilds -lt $NR ]; then
@@ -36,19 +37,24 @@ while true; do
         if [ "x$srpm" != "x" ]; then
             echo "Starting build: $srpm"
             ./build $srpm &
+            busy=1
         fi
     fi
 
-    # Do we need to createrepo and push?
-    if test -f $ROOT/needs-push; then
-        rm -f $ROOT/needs-push
-        ./push
-    fi
+    if [ "$busy" -eq 0 ]; then
+        # Do we need to createrepo and push?
+        if test -f $ROOT/needs-push; then
+            rm -f $ROOT/needs-push
+            echo "Creating repo and pushing to local web server"
+            ./push
+        fi
 
-    # Do we need to upload to the public repo?
-    if test -f $ROOT/needs-upload; then
-        rm -f $ROOT/needs-upload
-        ./upload srpms rpms repodata logs status
+        # Do we need to upload to the public repo?
+        if test -f $ROOT/needs-upload; then
+            rm -f $ROOT/needs-upload
+            echo "Uploading to the public web server"
+            ./upload srpms rpms repodata logs status
+        fi
     fi
 
     sleep $INTERVAL
