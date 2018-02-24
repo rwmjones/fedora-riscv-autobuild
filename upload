@@ -20,7 +20,7 @@ source config
 # Try to rsync with the main webserver, don't fail if we can't.
 
 lockfile $ROOT/lock
-pushd $ROOT
+pushd $ROOT >/dev/null
 
 for f in "$@"; do
     case "$f" in
@@ -43,5 +43,5 @@ for f in "$@"; do
     esac
 done
 
-popd
+popd >/dev/null
 rm -f $ROOT/lock

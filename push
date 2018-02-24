@@ -22,15 +22,15 @@ source config
 w="$(pwd)"
 
 lockfile $ROOT/lock
-pushd $ROOT
+pushd $ROOT >/dev/null
 
 # Recreate the repodata.
-pushd $ROOT/RPMS
+pushd $ROOT/RPMS >/dev/null
 createrepo -q -g "$w/comps-f28.xml" .
-popd
+popd >/dev/null
 
 # Upload the new set of RPMs and repodata to the web server.
 rsync -a --delete $ROOT/RPMS $WEBSYNC
 
-popd
+popd >/dev/null
 rm -f $ROOT/lock
