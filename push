@@ -26,7 +26,7 @@ pushd $ROOT >/dev/null
 
 # Recreate the repodata.
 pushd $ROOT/RPMS >/dev/null
-createrepo -q -g "$w/comps-f28.xml" .
+createrepo_c -q -g "$w/comps-f28.xml" .
 popd >/dev/null
 
 # Upload the new set of RPMs and repodata to the web server.
