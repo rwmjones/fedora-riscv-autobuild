@@ -57,7 +57,7 @@ su -c "rpm -i /var/tmp/@SRPM@" $user
 
 # Install the package BuildRequires.  We do this first as it's the
 # step most likely to fail.
-dnf -y builddep $topdir/SPECS/@NAME@.spec
+dnf -y builddep $topdir/SPECS/@NAME@.spec --define "_topdir $topdir"
 
 # Pick up any updated packages since stage4 was built:
 dnf -y update --best
