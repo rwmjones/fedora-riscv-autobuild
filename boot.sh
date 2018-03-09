@@ -64,8 +64,6 @@ dnf -y update --best
 
 # Install the basic build environment.
 dnf -y group install buildsys-build
-# XXX We need this temporarily while using hack-gcc.
-dnf -y install hack-gcc glibc-devel
 
 exec >& /build.log
 
