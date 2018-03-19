@@ -60,7 +60,7 @@ su -c "rpm -i /var/tmp/@SRPM@" $user
 dnf -y builddep $topdir/SPECS/@NAME@.spec --define "_topdir $topdir"
 
 # Pick up any updated packages since stage4 was built:
-dnf -y update --best
+dnf -y update --best ||:
 
 # Install the basic build environment.
 dnf -y group install buildsys-build
