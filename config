@@ -18,6 +18,9 @@ QEMU_EXTRA="-smp 4"
 # Memory allocated to each qemu instance.
 QEMU_MEMORY="4G"
 
+# Disk space to be allocated to each build.
+DISK_SIZE="20G"
+
 # Tag to search for new Koji builds.
 TAG=f27-updates-candidate
 

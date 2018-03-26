@@ -71,8 +71,11 @@ if rpm -qip "$tmpdir/$basename" | grep -sq '^Architecture: noarch$'; then
     exit 0
 fi
 
-# Copy stage4-disk.img into the tmpdir.
+# Copy stage4-disk.img into the tmpdir and resize.
 cp $ROOT/stage4-disk.img $tmpdir/$name-disk.img
+truncate -s "$DISK_SIZE" $tmpdir/$name-disk.img
+e2fsck -fp $tmpdir/$name-disk.img
+resize2fs $tmpdir/$name-disk.img
 
 # Copy the firstboot file and modify it.
 sed -e "s,@SRPM@,$basename,g" \
