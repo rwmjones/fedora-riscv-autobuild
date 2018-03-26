@@ -28,3 +28,6 @@ TAG=f27-updates-candidate
 # server which is also available as an rsync path.
 WEBSERVER=http://192.168.0.249/scratch
 WEBSYNC=192.168.0.249:/mnt/scratch
+
+# Public hosting.
+PUBHOST=fedorapeople.org:/project/risc-v

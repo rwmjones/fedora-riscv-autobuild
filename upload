@@ -25,20 +25,20 @@ pushd $ROOT >/dev/null
 for f in "$@"; do
     case "$f" in
         srpms)
-            rsync -a SRPMS fedorapeople.org:/project/risc-v/ ||:
+            rsync -a SRPMS $PUBHOST ||:
             ;;
         rpms)
-            rsync -a RPMS/noarch fedorapeople.org:/project/risc-v/RPMS/ ||:
-            rsync -a RPMS/riscv64 fedorapeople.org:/project/risc-v/RPMS/ ||:
+            rsync -a RPMS/noarch $PUBHOST/RPMS/ ||:
+            rsync -a RPMS/riscv64 $PUBHOST/RPMS/ ||:
             ;;
         repodata)
-            rsync -a --delete RPMS/repodata fedorapeople.org:/project/risc-v/RPMS/ ||:
+            rsync -a --delete RPMS/repodata $PUBHOST/RPMS/ ||:
             ;;
         logs)
-            rsync -a logs fedorapeople.org:/project/risc-v/ ||:
+            rsync -a logs $PUBHOST ||:
             ;;
         status)
-            rsync -a autobuild-status.html fedorapeople.org:/project/risc-v/ ||:
+            rsync -a autobuild-status.html $PUBHOST ||:
             ;;
     esac
 done
