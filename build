@@ -129,6 +129,9 @@ else
     exit 1
 fi
 
+# If successful, print elapsed time.
+awk -v dt=$SECONDS 'BEGIN{ dd=int(dt/86400); dt2=dt-86400*dd; dh=int(dt2/3600); dt3=dt2-3600*dh; dm=int(dt3/60); ds=dt3-60*dm; printf "Build time: %d days %02d hours %02d minutes %02d seconds\n", dd, dh, dm, ds}'
+
 # If successful, copy out the generated RPMs.
 virt-copy-out -a $tmpdir/$name-disk.img /builddir/build/RPMS /builddir/build/SRPMS $tmpdir/
 
